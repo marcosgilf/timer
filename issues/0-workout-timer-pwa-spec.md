@@ -38,6 +38,10 @@ readable across a room while training. Spec only — no build in this map.
   skip/back shift `startedAt`. Missed cues on wake are dropped, not replayed. Cues ride a ~1s
   lookahead scheduler on `AudioContext.currentTime` to survive tab throttling. Budget ±50ms phases,
   ±30ms cues; provable without fake timers because the clock is a parameter.
+- [Audio and haptic cue model](3-audio-and-haptic-cue-model.md) — cues are data (`{at, kind}` from a pure
+  `cuesFor(workout)`), sinks are dumb. Synthesised tones, no audio files; pitch = meaning (high work,
+  low rest). Config = mute + volume + tick toggle + vibration toggle. `AudioContext` unlocked on the
+  Start tap with a visible fallback. Vibration is Android-only, toggle hidden where unsupported.
 - [PWA offline, install and Wake Lock — platform research](4-pwa-offline-install-wakelock-research.md) —
   `@vite-pwa/astro@1.2.0` builds fine on Astro 7 (peer range lies; needs explicit `workbox-window`,
   and head tags are injected by hand); iOS Wake Lock is **18.4**, not 16.4, and absent from Home
@@ -47,8 +51,10 @@ readable across a room while training. Spec only — no build in this map.
 
 ## Not yet specified
 
-- Voice cues (spoken counts / "3-2-1-go") — agreed as a *later* addition; shape unknown until
-  the audio cue model exists (see Audio & haptic cue model).
+- Voice cues (spoken counts / "3-2-1-go") — a speech **sink** added behind the cue model decided in
+  [Audio and haptic cue model](3-audio-and-haptic-cue-model.md); no engine change needed. Open: Web
+  Speech vs recorded clips, and whether it survives offline.
+- Recorded audio samples instead of synthesised tones — only if tones prove inaudible in a noisy gym.
 - CI (GitHub Actions): no workflow exists; hooks are the only gate. Ticket it if CI is wanted —
   Testing strategy touches the question.
 - Preset / saved-workout storage — v1 configures fresh each time, but the config model may make

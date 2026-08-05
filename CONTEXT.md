@@ -36,6 +36,13 @@ The three numbers a running Workout is made of: `startedAt`, `pausedTotalMs`, `p
 is derived from them and the current time — never counted up. Skipping forward or back moves
 `startedAt`; nothing else moves.
 
+## Cue
+
+A moment that makes itself heard or felt: `{ at, kind }`. Kinds are `countdown-tick`,
+`phase-start`, `final-round`, `workout-end`. Cues are **data** produced by a pure function from a
+Workout; a **sink** (tone, vibration, later speech) renders them. Pitch carries meaning — high = work,
+low = rest.
+
 ## Banned terms
 
 - **Interval** — gym slang for both a single Phase and the tabata style as a whole. Say Phase or Mode.
