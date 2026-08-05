@@ -4,7 +4,7 @@ title: PWA offline, install and Wake Lock — platform research
 labels: [wayfinder:research]
 parent: 0
 blocked_by: []
-assignee:
+assignee: marcosenrique.gil
 state: open
 ---
 
