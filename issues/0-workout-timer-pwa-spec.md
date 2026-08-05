@@ -30,6 +30,9 @@ readable across a room while training. Spec only — no build in this map.
   husky/lint-staged wired (commit `938e0e9`); `check:types` is `astro check` since tsc can't read `.astro`.
   oxlint **does** lint `.astro` (frontmatter + `<script>`); oxfmt does not format them. React, Playwright
   and coverage deliberately not installed yet.
+- [Interval sequence model — one engine for six modes](1-interval-sequence-model.md) — one model, six
+  presets; Modes are config + label, only Crono is unbounded. State is **derived**, not stepped:
+  pure `phaseAt(elapsedMs, workout)`. Rounds are the only nesting level. Vocabulary in `CONTEXT.md`.
 
 ## Not yet specified
 
@@ -39,6 +42,10 @@ readable across a room while training. Spec only — no build in this map.
   Testing strategy touches the question.
 - Preset / saved-workout storage — v1 configures fresh each time, but the config model may make
   presets nearly free; revisit after Persistence model.
+- **Sets** — a second nesting level above Round (3 sets of tabata with 60s between). Ruled out of v1
+  as model complexity; revisit only if it is actually missed in the gym.
+- **AMRAP round tapping** — tapping to count rounds is only worth it with history to write them to,
+  and history is out of scope. Revisit if history ever comes in.
 - Copy, iconography, app name, favicon/manifest icon set.
 - Deploy target beyond local (if ever).
 
