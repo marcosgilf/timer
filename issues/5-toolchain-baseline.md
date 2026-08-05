@@ -35,7 +35,7 @@ Done in commit `938e0e9`. Hooks verified live on that commit (lint-staged ran, t
 Files added/changed:
 - `.oxlintrc.json` — reference config plus `env.browser` and `ignorePatterns: [dist, .astro]`.
 - `.oxfmtrc.json` — reference config plus `**/*.md` ignored, so oxfmt never rewrites `issues/` tickets.
-- `.lintstagedrc.js` — JS/TS → `pnpm format` + project-wide `astro check`; `*.astro` → `astro check` only.
+- `.lintstagedrc.js` — JS/TS → `pnpm format` + project-wide `astro check`; `*.astro` → `oxlint --fix` + `astro check`.
 - `vitest.config.ts` — `include: src/**/*.test.ts` (copied verbatim).
 - `.husky/pre-commit` → `pnpm exec lint-staged`; `.husky/pre-push` → `pnpm check && pnpm test`.
 - `.npmrc` — `min-release-age=7` (copied).
@@ -46,9 +46,12 @@ Decisions and deviations from `b2b-wrk-esi`:
   Adding it later is `astro add react`, one command — installing now would be speculative.
 - **`check:types` is `astro check`, not `tsc --noEmit`** — `tsc` cannot parse `.astro` files.
   `@astrojs/check` added for this; `tsconfig.json` stays on `astro/tsconfigs/strict`, untouched.
-- **oxlint does not lint `.astro` files.** Script logic therefore belongs in `.ts` modules under
-  `src/`, which oxlint and vitest both see; `.astro` files stay markup-only. Type errors in
-  `.astro` are still caught by `astro check`.
+- **`.lintstagedrc.js`** — JS/TS → `pnpm format` + project-wide `astro check`; `*.astro` → `oxlint --fix`
+  + `astro check`.
+- **oxlint lints `.astro`** (verified on 1.77.0: flags errors in both frontmatter and `<script>`, and
+  `oxlint .` walks them without extra config). **oxfmt does not** — `.astro` files are excluded by its
+  ignore rules, so nothing formats them today. Accepted: editor formatting + `astro check` cover it.
+  Add `prettier` + `prettier-plugin-astro` only if template drift becomes annoying.
 - **`output: 'static'` not set** — it is the Astro 7 default; the explicit line would be noise.
   It becomes a real decision only if an adapter appears (PWA research ticket).
 - **Playwright not installed** — Testing strategy owns that decision; installing before it is decided

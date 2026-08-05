@@ -27,9 +27,9 @@ readable across a room while training. Spec only — no build in this map.
 
 - Destination, scope, and stack pinned in the charting grilling (this map's Notes + Out of scope).
 - [Toolchain baseline ported from b2b-wrk-esi](5-toolchain-baseline.md) — pnpm + vitest + oxlint/oxfmt +
-  husky/lint-staged wired (commit `938e0e9`); `check:types` is `astro check` since tsc can't read `.astro`,
-  oxlint can't either — so logic lives in `src/**/*.ts`, `.astro` stays markup-only. React, Playwright and
-  coverage deliberately not installed yet.
+  husky/lint-staged wired (commit `938e0e9`); `check:types` is `astro check` since tsc can't read `.astro`.
+  oxlint **does** lint `.astro` (frontmatter + `<script>`); oxfmt does not format them. React, Playwright
+  and coverage deliberately not installed yet.
 
 ## Not yet specified
 
