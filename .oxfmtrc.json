@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": ["dist", ".astro", "**/*.md"],
+  "overrides": [
+    {
+      "files": ["*.json", "*.jsonc", "**/*.json", "**/*.jsonc"],
+      "options": {
+        "trailingComma": "none"
+      }
+    }
+  ]
+}
