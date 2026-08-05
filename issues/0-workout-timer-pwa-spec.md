@@ -26,11 +26,17 @@ readable across a room while training. Spec only — no build in this map.
 ## Decisions so far
 
 - Destination, scope, and stack pinned in the charting grilling (this map's Notes + Out of scope).
+- [Toolchain baseline ported from b2b-wrk-esi](5-toolchain-baseline.md) — pnpm + vitest + oxlint/oxfmt +
+  husky/lint-staged wired (commit `938e0e9`); `check:types` is `astro check` since tsc can't read `.astro`,
+  oxlint can't either — so logic lives in `src/**/*.ts`, `.astro` stays markup-only. React, Playwright and
+  coverage deliberately not installed yet.
 
 ## Not yet specified
 
 - Voice cues (spoken counts / "3-2-1-go") — agreed as a *later* addition; shape unknown until
   the audio cue model exists (see Audio & haptic cue model).
+- CI (GitHub Actions): no workflow exists; hooks are the only gate. Ticket it if CI is wanted —
+  Testing strategy touches the question.
 - Preset / saved-workout storage — v1 configures fresh each time, but the config model may make
   presets nearly free; revisit after Persistence model.
 - Copy, iconography, app name, favicon/manifest icon set.
