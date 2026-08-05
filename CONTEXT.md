@@ -30,6 +30,12 @@ Rounds are the **only** nesting level: there are no sets.
 A get-ready `prepare` Phase before the first `work` Phase of any Mode, Crono included. A global
 preference, not per-Workout configuration; `0` disables it.
 
+## Clock
+
+The three numbers a running Workout is made of: `startedAt`, `pausedTotalMs`, `pausedAt`. **Elapsed**
+is derived from them and the current time — never counted up. Skipping forward or back moves
+`startedAt`; nothing else moves.
+
 ## Banned terms
 
 - **Interval** — gym slang for both a single Phase and the tabata style as a whole. Say Phase or Mode.

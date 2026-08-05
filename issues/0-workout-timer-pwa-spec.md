@@ -33,6 +33,11 @@ readable across a room while training. Spec only — no build in this map.
 - [Interval sequence model — one engine for six modes](1-interval-sequence-model.md) — one model, six
   presets; Modes are config + label, only Crono is unbounded. State is **derived**, not stepped:
   pure `phaseAt(elapsedMs, workout)`. Rounds are the only nesting level. Vocabulary in `CONTEXT.md`.
+- [Clock accuracy and background behaviour](2-clock-accuracy-and-background-behaviour.md) — `Date.now()`
+  only (survives sleep), Clock = `{startedAt, pausedTotalMs, pausedAt}`, rAF redraw from the clock,
+  skip/back shift `startedAt`. Missed cues on wake are dropped, not replayed. Cues ride a ~1s
+  lookahead scheduler on `AudioContext.currentTime` to survive tab throttling. Budget ±50ms phases,
+  ±30ms cues; provable without fake timers because the clock is a parameter.
 
 ## Not yet specified
 
@@ -46,6 +51,7 @@ readable across a room while training. Spec only — no build in this map.
   as model complexity; revisit only if it is actually missed in the gym.
 - **AMRAP round tapping** — tapping to count rounds is only worth it with history to write them to,
   and history is out of scope. Revisit if history ever comes in.
+- **Tenths of a second on Crono** — dropped for readability across a room; revisit only if actually missed.
 - Copy, iconography, app name, favicon/manifest icon set.
 - Deploy target beyond local (if ever).
 
