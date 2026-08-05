@@ -38,6 +38,12 @@ readable across a room while training. Spec only — no build in this map.
   skip/back shift `startedAt`. Missed cues on wake are dropped, not replayed. Cues ride a ~1s
   lookahead scheduler on `AudioContext.currentTime` to survive tab throttling. Budget ±50ms phases,
   ±30ms cues; provable without fake timers because the clock is a parameter.
+- [PWA offline, install and Wake Lock — platform research](4-pwa-offline-install-wakelock-research.md) —
+  `@vite-pwa/astro@1.2.0` builds fine on Astro 7 (peer range lies; needs explicit `workbox-window`,
+  and head tags are injected by hand); iOS Wake Lock is **18.4**, not 16.4, and absent from Home
+  Screen web apps before that; `performance.now()` stalls on suspend on both platforms and iOS
+  **interrupts** WebAudio in the background unless `navigator.audioSession.type = "playback"`;
+  nothing forces React. Findings on branch `research/pwa-platform`.
 
 ## Not yet specified
 
