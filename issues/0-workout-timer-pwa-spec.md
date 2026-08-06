@@ -13,6 +13,9 @@ readable across a room while training. Spec only — no build in this map.
 
 ## Notes
 
+- **Progressive enhancement is the standing rule**: the app must be fully correct with zero platform
+  extras — every capability (audio session, Wake Lock, vibration, install, offline) is feature-detected
+  and a no-op when absent. No polyfills, no UA sniffing, no keepalive hacks.
 - Domain: web app / fitness interval timing. Single user (the author), no accounts, no sync.
 - Stack fixed: Astro + TypeScript, static output, React islands **only where mandatory** —
   prefer plain Astro + native browser features (`<dialog>`, form controls, CSS, View Transitions).
@@ -62,6 +65,11 @@ readable across a room while training. Spec only — no build in this map.
   Playwright e2e tests each guard one decision, using `page.clock`. Audio, vibration, Wake Lock and iOS
   behaviour are explicitly untested — manual phone check before shipping. Coverage reported, never
   gated. Unit on `pre-push`, e2e manual, CI split out as its own ticket.
+- [iOS background audio](10-ios-background-audio.md) — every platform capability is **progressive
+  enhancement**, feature-detected, no-op when absent: audio session `"transient"` (ducks music, never
+  takes it over), Wake Lock with a screen-may-sleep note below iOS 18.4, vibration Android-only. Cue
+  lookahead becomes **one Phase**, not one second; any Clock mutation reschedules through a single
+  function. No keepalive hacks.
 
 ## Not yet specified
 
