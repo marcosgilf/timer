@@ -70,6 +70,9 @@ readable across a room while training. Spec only — no build in this map.
   takes it over), Wake Lock with a screen-may-sleep note below iOS 18.4, vibration Android-only. Cue
   lookahead becomes **one Phase**, not one second; any Clock mutation reschedules through a single
   function. No keepalive hacks.
+- [Where cue and app settings live in the UI](11-settings-ui-home.md) — a Settings screen behind a `⚙` in
+  a new Home top nav; five controls (mute, volume, tick toggle, vibration toggle, prepare duration) plus
+  Reset everything. No mute on the Running screen — hardware volume buttons do that job.
 
 ## Not yet specified
 
@@ -86,6 +89,8 @@ readable across a room while training. Spec only — no build in this map.
 - **AMRAP round tapping** — tapping to count rounds is only worth it with history to write them to,
   and history is out of scope. Revisit if history ever comes in.
 - **Tenths of a second on Crono** — dropped for readability across a room; revisit only if actually missed.
+- **Per-Workout prepare countdown** — currently a global preference; if it needs to vary per Workout it
+  becomes a Config field and stops being a preference, which is a model change, not a UI tweak.
 - Copy, iconography, app name, favicon/manifest icon set.
 - Deploy target beyond local (if ever).
 
