@@ -48,6 +48,10 @@ readable across a room while training. Spec only — no build in this map.
   Screen web apps before that; `performance.now()` stalls on suspend on both platforms and iOS
   **interrupts** WebAudio in the background unless `navigator.audioSession.type = "playback"`;
   nothing forces React. Findings on branch `research/pwa-platform`.
+- [Screen layout and config UI](6-screen-layout-and-config-ui.md) — variant 3 (bar + round pips + big
+  digits) wins; ring and full-bleed colour rejected. Shared top nav (`←` / title / `✕`) on every screen
+  but Home, content top-aligned, Start as lone sticky CTA, small icon transport row so the digits keep
+  the screen. Crono starts on tap. No React anywhere. Prototype kept on branch `prototype/timer-ui`.
 
 ## Not yet specified
 
@@ -64,6 +68,9 @@ readable across a room while training. Spec only — no build in this map.
 - **AMRAP round tapping** — tapping to count rounds is only worth it with history to write them to,
   and history is out of scope. Revisit if history ever comes in.
 - **Tenths of a second on Crono** — dropped for readability across a room; revisit only if actually missed.
+- **Where cue settings live** — [Audio and haptic cue model](3-audio-and-haptic-cue-model.md) decided
+  mute + volume + tick toggle + vibration toggle, but the prototype gave them no home. A settings
+  screen off Home, or a panel on the Config screen? Ticket it before the spec is assembled.
 - Copy, iconography, app name, favicon/manifest icon set.
 - Deploy target beyond local (if ever).
 
