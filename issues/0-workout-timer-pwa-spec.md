@@ -57,6 +57,11 @@ readable across a room while training. Spec only — no build in this map.
   Mode**. Resume runs from real elapsed; a session that replays to `done` is discarded and opens Home —
   that is the entire staleness policy. Writes on Clock mutation + `pagehide`. All reads/writes fail
   silently to defaults.
+- [Testing strategy](8-testing-strategy.md) — unit tests cover the pure core only (`phaseAt`,
+  `boundaries`, `cuesFor`, `elapsed`, clamping, prefs) with no fake timers, mocks or jsdom; five
+  Playwright e2e tests each guard one decision, using `page.clock`. Audio, vibration, Wake Lock and iOS
+  behaviour are explicitly untested — manual phone check before shipping. Coverage reported, never
+  gated. Unit on `pre-push`, e2e manual, CI split out as its own ticket.
 
 ## Not yet specified
 
@@ -64,8 +69,7 @@ readable across a room while training. Spec only — no build in this map.
   [Audio and haptic cue model](3-audio-and-haptic-cue-model.md); no engine change needed. Open: Web
   Speech vs recorded clips, and whether it survives offline.
 - Recorded audio samples instead of synthesised tones — only if tones prove inaudible in a noisy gym.
-- CI (GitHub Actions): no workflow exists; hooks are the only gate. Ticket it if CI is wanted —
-  Testing strategy touches the question.
+- CI (GitHub Actions) — now [ticket 12](12-ci-workflow.md); not a blocker for the spec.
 - Preset / saved-workout storage — v1 configures fresh each time, but `lastUsed` in
   [Persistence model](7-persistence-model.md) is already the right shape; named presets would be the
   same object under a different key, no migration.

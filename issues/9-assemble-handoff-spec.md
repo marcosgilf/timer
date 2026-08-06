@@ -3,7 +3,7 @@ id: 9
 title: Assemble the handoff spec
 labels: [wayfinder:task]
 parent: 0
-blocked_by: [1, 2, 3, 4, 5, 6, 7, 8]
+blocked_by: [1, 2, 3, 4, 5, 6, 7, 8, 10, 11]
 assignee:
 state: open
 ---
