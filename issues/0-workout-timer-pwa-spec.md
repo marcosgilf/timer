@@ -68,9 +68,6 @@ readable across a room while training. Spec only — no build in this map.
 - **AMRAP round tapping** — tapping to count rounds is only worth it with history to write them to,
   and history is out of scope. Revisit if history ever comes in.
 - **Tenths of a second on Crono** — dropped for readability across a room; revisit only if actually missed.
-- **Where cue settings live** — [Audio and haptic cue model](3-audio-and-haptic-cue-model.md) decided
-  mute + volume + tick toggle + vibration toggle, but the prototype gave them no home. A settings
-  screen off Home, or a panel on the Config screen? Ticket it before the spec is assembled.
 - Copy, iconography, app name, favicon/manifest icon set.
 - Deploy target beyond local (if ever).
 
