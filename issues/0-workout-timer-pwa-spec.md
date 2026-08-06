@@ -52,6 +52,11 @@ readable across a room while training. Spec only — no build in this map.
   digits) wins; ring and full-bleed colour rejected. Shared top nav (`←` / title / `✕`) on every screen
   but Home, content top-aligned, Start as lone sticky CTA, small icon transport row so the digits keep
   the screen. Crono starts on tap. No React anywhere. Prototype kept on branch `prototype/timer-ui`.
+- [Persistence model](7-persistence-model.md) — two `localStorage` keys (`timer:prefs:v1` rarely written,
+  `timer:session:v1` disposable). Prefs carry cue settings, prepare duration and **last-used config per
+  Mode**. Resume runs from real elapsed; a session that replays to `done` is discarded and opens Home —
+  that is the entire staleness policy. Writes on Clock mutation + `pagehide`. All reads/writes fail
+  silently to defaults.
 
 ## Not yet specified
 
@@ -61,8 +66,9 @@ readable across a room while training. Spec only — no build in this map.
 - Recorded audio samples instead of synthesised tones — only if tones prove inaudible in a noisy gym.
 - CI (GitHub Actions): no workflow exists; hooks are the only gate. Ticket it if CI is wanted —
   Testing strategy touches the question.
-- Preset / saved-workout storage — v1 configures fresh each time, but the config model may make
-  presets nearly free; revisit after Persistence model.
+- Preset / saved-workout storage — v1 configures fresh each time, but `lastUsed` in
+  [Persistence model](7-persistence-model.md) is already the right shape; named presets would be the
+  same object under a different key, no migration.
 - **Sets** — a second nesting level above Round (3 sets of tabata with 60s between). Ruled out of v1
   as model complexity; revisit only if it is actually missed in the gym.
 - **AMRAP round tapping** — tapping to count rounds is only worth it with history to write them to,
