@@ -33,17 +33,26 @@ Modelled on `../blog/`, translated from npm to pnpm.
 ### Files
 
 - `.nvmrc` — `v22`, single source of the Node version for both workflows (`engines` stays `>=22.12.0`).
-- `.github/workflows/ci.yml` — on PR and on push to `main`: `pnpm check` → `pnpm test:coverage` →
-  `pnpm build`. Coverage uploaded as an artifact (`if-no-files-found: ignore`, since there are no tests
-  yet); **no gate**, per [Testing strategy](8-testing-strategy.md).
-- `.github/workflows/deploy.yml` — on push to `main`: build, then `netlify-cli deploy --prod --no-build
-  --dir=dist`. `NETLIFY_AUTH_TOKEN` as a secret, `NETLIFY_SITE_ID` as a repo variable, same as the blog.
-  `concurrency: deploy-production` with `cancel-in-progress` so two pushes cannot race a deploy.
+- `.github/workflows/ci.yml` — **one workflow, three jobs**, on PR and on push to `main`:
+  - `check` — `pnpm check` → `pnpm test:coverage` → `pnpm build`; uploads `coverage/` (no gate) and
+    `dist/` as artifacts.
+  - `deploy-preview` — `needs: check`, pull requests only, downloads `dist/` and deploys to a Netlify
+    alias `pr-<number>`, then sticky-comments the URL on the PR. Skipped on forks, where secrets are
+    unavailable.
+  - `deploy-production` — `needs: check`, push to `main` only, deploys the same artifact with `--prod`.
 
 ### Decisions
 
-- **One job, not three.** The blog splits lint/test and build; here they share an install and run in one
-  job — the build takes ~1s and splitting only buys parallel red marks.
+- **Deploy is a job, not a workflow.** A separate `deploy.yml` on `push` would run *in parallel* with
+  CI and could ship a build whose tests were red. `needs: check` is the gate, expressed natively — no
+  `workflow_run` indirection, no race.
+- **Build once, deploy that artifact.** Preview and production both download the `dist/` produced by
+  `check`, so what was tested is exactly what ships.
+- **Repository-level** secret `NETLIFY_AUTH_TOKEN` and variable `NETLIFY_SITE_ID` — not environment
+  scoped. An `environment:` block was tried and reverted: it buys approval gates this project does not
+  want.
+- **`packageManager` in `package.json`** — `pnpm/action-setup@v4` refuses to guess a version. Declared
+  once there rather than pinned in the workflow, so corepack honours it locally too.
 - **Signal, not gate.** Solo project pushing to `main`; branch protection would only lock the author out
   of their own repo. Husky (`pre-push` → `pnpm check && pnpm test`) is the real guard; CI is the second
   opinion on a clean machine.
