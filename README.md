@@ -55,7 +55,7 @@ Git hooks: `pre-commit` formats and type-checks staged files, `pre-push` runs `p
 
 Decisions are made one at a time as tickets in [`issues/`](./issues) — a local markdown issue tracker
 using the [wayfinder](https://github.com/mattpocock/skills) method — and folded into
-[`docs/spec.md`](./docs/spec.md). [`CONTEXT.md`](./CONTEXT.md) is the glossary.
+[`docs/spec.md`](./docs/spec.md), with the code structure in [`docs/architecture.md`](./docs/architecture.md). [`CONTEXT.md`](./CONTEXT.md) is the glossary.
 
 Two branches are kept as primary sources and are deliberately not merged:
 
