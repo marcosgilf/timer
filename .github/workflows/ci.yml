@@ -1,5 +1,9 @@
 name: CI
 
+# Thin orchestrator: owns the triggers and the order, nothing else.
+# The work lives in qa.yml / deploy-dev.yml / deploy-prod.yml, called as reusable workflows so
+# `needs:` still gates them and the pull-request context (PR number, comments) is preserved.
+
 on:
   pull_request:
     branches:
@@ -16,106 +20,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
+  qa:
+    uses: ./.github/workflows/qa.yml
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Types, lint and format
-        run: pnpm check
-
-      - name: Unit tests
-        run: pnpm test:coverage
-
-      - name: Upload coverage
-        uses: actions/upload-artifact@v7
-        with:
-          name: coverage
-          path: coverage
-          if-no-files-found: ignore
-
-      - name: Build
-        run: pnpm build
-
-      - name: Upload build
-        uses: actions/upload-artifact@v7
-        with:
-          name: dist
-          path: dist
-
-  # Preview deploy for pull requests. Skipped on forks, where secrets are unavailable.
-  deploy-preview:
-    needs: check
-    if: >-
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
+  deploy-dev:
+    needs: qa
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/deploy-dev.yml
     permissions:
       contents: read
       pull-requests: write
-    steps:
-      - name: Download build
-        uses: actions/download-artifact@v8
-        with:
-          name: dist
-          path: dist
+    secrets: inherit
 
-      - name: Deploy preview to Netlify
-        id: netlify
-        run: |
-          url=$(npx netlify-cli deploy \
-            --dir=dist \
-            --no-build \
-            --alias="pr-${{ github.event.number }}" \
-            --site="$NETLIFY_SITE_ID" \
-            --auth="$NETLIFY_AUTH_TOKEN" \
-            --json | jq -r '.deploy_url')
-          echo "url=$url" >> "$GITHUB_OUTPUT"
-          echo "Preview: $url" >> "$GITHUB_STEP_SUMMARY"
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ vars.NETLIFY_SITE_ID }}
-
-      - name: Comment the preview URL
-        uses: marocchino/sticky-pull-request-comment@v3
-        with:
-          header: netlify-preview
-          message: |
-            🚀 Preview deploy: ${{ steps.netlify.outputs.url }}
-
-  deploy-production:
-    needs: check
+  deploy-prod:
+    needs: qa
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download build
-        uses: actions/download-artifact@v8
-        with:
-          name: dist
-          path: dist
-
-      - name: Deploy to Netlify
-        run: |
-          npx netlify-cli deploy \
-            --dir=dist \
-            --no-build \
-            --prod \
-            --site="$NETLIFY_SITE_ID" \
-            --auth="$NETLIFY_AUTH_TOKEN"
-          echo "Production: https://timer.marcosgilf.com" >> "$GITHUB_STEP_SUMMARY"
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ vars.NETLIFY_SITE_ID }}
+    uses: ./.github/workflows/deploy-prod.yml
+    secrets: inherit
