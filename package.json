@@ -29,6 +29,7 @@
     "oxlint": "^1.77.0",
     "vitest": "^4.1.10"
   },
+  "packageManager": "pnpm@10.25.0",
   "engines": {
     "node": ">=22.12.0"
   }
