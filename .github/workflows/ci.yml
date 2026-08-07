@@ -1,5 +1,9 @@
 name: CI
 
+# Thin orchestrator: owns the triggers and the order, nothing else.
+# The work lives in qa.yml / deploy-dev.yml / deploy-prod.yml, called as reusable workflows so
+# `needs:` still gates them and the pull-request context (PR number, comments) is preserved.
+
 on:
   pull_request:
     branches:
@@ -11,37 +15,25 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  qa:
+    uses: ./.github/workflows/qa.yml
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+  deploy-dev:
+    needs: qa
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/deploy-dev.yml
+    permissions:
+      contents: read
+      pull-requests: write
+    secrets: inherit
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Types, lint and format
-        run: pnpm check
-
-      - name: Unit tests
-        run: pnpm test:coverage
-
-      - name: Upload coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage
-          path: coverage
-          if-no-files-found: ignore
-
-      - name: Build
-        run: pnpm build
+  deploy-prod:
+    needs: qa
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/deploy-prod.yml
+    secrets: inherit

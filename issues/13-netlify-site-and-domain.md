@@ -31,7 +31,8 @@ custom domain to a site in the **same Netlify team** creates the record automati
 4. Push to `main` (or re-run the failed Deploy workflow) and confirm `timer.marcosgilf.com` serves the
    build.
 5. Decide whether deploy previews on pull requests are wanted (`../blog/` has `deploy-preview.yml`) —
-   if so, that is a follow-up ticket, not this one.
+   **yes**: `ci.yml` deploys pull requests to the Netlify alias `pr-<number>` and comments the URL.
+   Nothing extra to configure; it reuses the same site and credentials.
 
 ## Open decision
 
