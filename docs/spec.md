@@ -547,8 +547,10 @@ tickets. None of these is a gap to fill; each was decided against.
 
 Genuinely undecided. An implementer should raise these rather than assume.
 
-- **CI** — [CI workflow](../issues/12-ci-workflow.md) is still open: whether GitHub Actions is a gate
-  or a signal, whether e2e runs there, whether this repo uses PRs at all. The app ships without CI.
+- ~~**CI**~~ — resolved after the spec was written: [CI workflow](../issues/12-ci-workflow.md) and
+  [Netlify site and timer.marcosgilf.com](../issues/13-netlify-site-and-domain.md) are closed. CI is a
+  signal, not a gate; deploys are gated on a green `qa` job; e2e stays out of CI until tests exist; the
+  app is live at `timer.marcosgilf.com`.
 - **Default values for `Prefs`** — the fields are fixed by
   [ticket 7](../issues/7-persistence-model.md), but only `prepareMs` has a stated default (10s).
   Starting `muted`, `volume`, `ticks` and `vibrate` values are unspecified.
