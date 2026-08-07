@@ -95,6 +95,17 @@ Shipped at `timer.marcosgilf.com`.
   --prod --dir=dist` on `main`). Signal not gate; husky stays the real guard. No Playwright in CI until
   e2e tests exist; no `netlify.toml` and no adapter because output is static. Human must set
   `NETLIFY_AUTH_TOKEN` / `NETLIFY_SITE_ID`.
+- [Netlify site and timer.marcosgilf.com](13-netlify-site-and-domain.md) — **live**: `timer.marcosgilf.com`
+  serves the build, record auto-managed by the Netlify DNS zone (no Terraform change). Workflows split
+  into `ci.yml` (orchestrator) + reusable `qa.yml` / `deploy-dev.yml` / `deploy-prod.yml`; PRs deploy to
+  the alias `pr-<number>` and nothing deploys unless `qa` is green.
+
+## Map complete
+
+Every ticket is closed and the destination — [`docs/spec.md`](../docs/spec.md) — is reached, with the
+repo, CI, deploy pipeline and public URL in place. Further work is **implementation**, which leaves
+wayfinder: slice `docs/spec.md` into build tickets and start with the pure core (`phaseAt`,
+`boundaries`, `cuesFor`), the only part with tests worth writing.
 
 ## Not yet specified
 

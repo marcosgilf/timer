@@ -4,8 +4,8 @@ title: Netlify site and timer.marcosgilf.com
 labels: [wayfinder:task]
 parent: 0
 blocked_by: [12]
-assignee:
-state: open
+assignee: marcosenrique.gil
+state: closed
 ---
 
 ## Question
@@ -39,3 +39,19 @@ custom domain to a site in the **same Netlify team** creates the record automati
 Does `../blog/infra/netlify` Terraform need a record for the subdomain, or is the auto-managed
 `NETLIFY` record enough? Verify in the Netlify DNS zone after step 2; if Terraform would drift, add
 the record there and note it in the blog repo instead.
+
+## Resolution
+
+**Live.** `https://timer.marcosgilf.com` returns HTTP 200 and serves the Astro build; DNS resolves to
+Netlify (`35.157.26.135`, `63.176.8.218`). Site `timer-marcosgilf`, deployed by the `deploy-prod`
+workflow on merge of [PR #1](https://github.com/marcosgilf/timer/pull/1).
+
+Credentials are **repository-level**: secret `NETLIFY_AUTH_TOKEN`, variable `NETLIFY_SITE_ID`. The site
+id appearing unmasked in job logs is expected and not a risk — it is an identifier, not a credential,
+and every write also needs the token, which is masked.
+
+Preview deploys work: pull requests land on the alias `pr-<number>`
+(e.g. `https://pr-1--timer-marcosgilf.netlify.app`) with the URL sticky-commented on the PR.
+
+Still open, carried to the blog repo, not this one: confirm `../blog/infra/netlify` Terraform shows no
+drift now that the subdomain record exists in the zone.
