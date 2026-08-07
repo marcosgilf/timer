@@ -7,21 +7,32 @@ state: open
 
 ## Destination
 
-A handoff-ready spec for an offline-first, installable, mobile-first PWA workout timer
-(crono, countdown, tabata, EMOM, AMRAP, pomodoro) with configurable sound + haptics,
-readable across a room while training. Spec only — no build in this map.
+A handoff-ready spec for an offline-first, installable, mobile-first PWA **timer** — a general-purpose
+one (tasks, workouts, pomodoros), not a fitness app — with Modes crono, countdown, tabata, EMOM, AMRAP
+and pomodoro, configurable sound + haptics, readable across a room. Spec only — no build in this map.
+Shipped at `timer.marcosgilf.com`.
 
 ## Notes
 
 - **Progressive enhancement is the standing rule**: the app must be fully correct with zero platform
   extras — every capability (audio session, Wake Lock, vibration, install, offline) is feature-detected
   and a no-op when absent. No polyfills, no UA sniffing, no keepalive hacks.
-- Domain: web app / fitness interval timing. Single user (the author), no accounts, no sync.
+- **Vocabulary correction (post-map)**: the domain noun **Workout** was renamed **Routine**, and the
+  framing widened from a fitness timer to a general-purpose one. `CONTEXT.md`, `docs/spec.md` and
+  `README.md` use Routine; the closed tickets keep their original wording as the historical record.
+  "Session" was rejected — it already names the in-flight run state in storage.
+- Domain: web app / **general-purpose interval timing** — tasks, workouts, pomodoros. Single user (the
+  author), no accounts, no sync. Repo description: *"Track tasks, workouts or run pomodoros in a
+  Progressive Web Application"*.
 - Stack fixed: Astro + TypeScript, static output, React islands **only where mandatory** —
   prefer plain Astro + native browser features (`<dialog>`, form controls, CSS, View Transitions).
 - Tooling fixed: pnpm, vitest (unit), Playwright (e2e), oxlint + oxfmt, husky + lint-staged.
   Reference config: `../../IKEA/b2b-wrk-esi/` (`.oxlintrc.json`, `.oxfmtrc.json`, `.lintstagedrc.js`, `.husky/`).
-- Hosting: local only for now. No backend, no analytics.
+- Hosting: **Netlify** at `timer.marcosgilf.com`, deployed from GitHub Actions on push to `main` (same
+  pattern as `../blog/`). The `marcosgilf.com` zone is Netlify DNS (nsone), Terraform-managed in
+  `../blog/infra/netlify`; a Netlify-connected custom domain auto-manages its record. No backend, no
+  analytics.
+- Licensed **MIT**; `CONTRIBUTING.md` present — the project is public-facing/OSS-friendly.
 - Persistence: `localStorage`, minimal.
 - Every session: `/grilling` + `/domain-modeling`; `/prototype` for prototype tickets; `/research` subagent for research tickets.
 - Plan, don't do: tickets produce decisions, not features.
@@ -73,6 +84,17 @@ readable across a room while training. Spec only — no build in this map.
 - [Where cue and app settings live in the UI](11-settings-ui-home.md) — a Settings screen behind a `⚙` in
   a new Home top nav; five controls (mute, volume, tick toggle, vibration toggle, prepare duration) plus
   Reset everything. No mute on the Running screen — hardware volume buttons do that job.
+- [Assemble the handoff spec](9-assemble-handoff-spec.md) — **destination reached**: `docs/spec.md` folds
+  every resolved ticket into one implementable document (domain model, engine + Clock, cues, the five
+  screens, persistence, PWA layer table, toolchain, testing, non-goals), each section citing the ticket
+  that decided it. Prototype and research branches cited, not merged. Seven genuine gaps are listed as
+  **Open questions** rather than guessed — `Prefs` defaults, update-prompt UI, iOS install copy, app
+  name/icons/`theme_color`, `src/` module layout, the `boundaries()` signature, and CI.
+- [CI workflow](12-ci-workflow.md) — `.nvmrc` + two GitHub Actions: `ci.yml` (check → test:coverage →
+  build, on PR and `main`, coverage as artifact, no gate) and `deploy.yml` (build → `netlify-cli deploy
+  --prod --dir=dist` on `main`). Signal not gate; husky stays the real guard. No Playwright in CI until
+  e2e tests exist; no `netlify.toml` and no adapter because output is static. Human must set
+  `NETLIFY_AUTH_TOKEN` / `NETLIFY_SITE_ID`.
 
 ## Not yet specified
 

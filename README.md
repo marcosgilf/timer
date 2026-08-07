@@ -1,46 +1,72 @@
-# Astro Starter Kit: Basics
+# timer
+
+Track tasks, routines or run pomodoros in a Progressive Web Application.
+
+A timer built to be read across a room while your hands are busy: giant digits, colour-coded phases,
+audible cues. Installable, works fully offline, keeps accurate time when the screen sleeps.
+
+> Status: **specified, not yet built.** The design is settled in [`docs/spec.md`](./docs/spec.md);
+> implementation has not started.
+
+## Modes
+
+| Mode | What it does |
+|---|---|
+| Crono | counts up, unbounded — starts the moment you tap it |
+| Countdown | counts down from a set time |
+| Tabata | work / rest × rounds (20s / 10s × 8 by default) |
+| EMOM | a repeating window (60s × 10 by default); E2MOM and E90 by changing the window |
+| AMRAP | a capped countdown to work against |
+| Pomodoro | focus / break × 4 plus a long break |
+
+All six are one engine: a Mode is default configuration over a single interval model, not its own
+code path.
+
+## Design notes
+
+- **Accurate by construction** — state is derived from a wall-clock timestamp with a pure
+  `phaseAt(elapsed, routine)`; nothing accumulates ticks, so nothing drifts.
+- **Offline-first** — precached service worker, no backend, no accounts, no analytics.
+- **Progressive enhancement** — audio session, Wake Lock and vibration are feature-detected and no-ops
+  where absent. The app is fully correct without any of them.
+- **No framework** — plain Astro, TypeScript, CSS and DOM APIs. No React unless something proves it
+  mandatory.
+
+## Development
 
 ```sh
-pnpm create astro@latest -- --template basics
+pnpm install
+pnpm dev          # http://localhost:4321
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+| Command | Action |
+|---|---|
+| `pnpm dev` | dev server |
+| `pnpm build` | production build to `./dist/` |
+| `pnpm preview` | preview the build locally |
+| `pnpm check` | `astro check` (types) + oxlint + oxfmt |
+| `pnpm format` | oxlint `--fix` + oxfmt `--write` |
+| `pnpm test` | vitest (unit) |
+| `pnpm test:coverage` | vitest with a coverage report (reported, never gated) |
 
-## 🚀 Project Structure
+Git hooks: `pre-commit` formats and type-checks staged files, `pre-push` runs `pnpm check && pnpm test`.
 
-Inside of your Astro project, you'll see the following folders and files:
+## How this project is planned
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
+Decisions are made one at a time as tickets in [`issues/`](./issues) — a local markdown issue tracker
+using the [wayfinder](https://github.com/mattpocock/skills) method — and folded into
+[`docs/spec.md`](./docs/spec.md). [`CONTEXT.md`](./CONTEXT.md) is the glossary.
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+Two branches are kept as primary sources and are deliberately not merged:
 
-## 🧞 Commands
+- `prototype/timer-ui` — the UI prototype that chose the running-screen layout.
+- `research/pwa-platform` — cited platform research (Wake Lock, WebAudio, install, `@vite-pwa/astro`).
 
-All commands are run from the root of the project, from a terminal:
+## Deployment
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
+Static build deployed by GitHub Actions to Netlify on push to `main`, served at
+[timer.marcosgilf.com](https://timer.marcosgilf.com).
 
-## 👀 Want to learn more?
+## Contributing
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+See [CONTRIBUTING.md](./CONTRIBUTING.md). Licensed under [MIT](./LICENSE).
