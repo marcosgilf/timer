@@ -4,7 +4,7 @@ title: CI workflow
 labels: [wayfinder:task]
 parent: 0
 blocked_by: []
-assignee: marcosenrique.gil
+assignee: marcosgilf
 state: closed
 ---
 

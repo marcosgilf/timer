@@ -4,7 +4,7 @@ title: Persistence model in localStorage
 labels: [wayfinder:grilling]
 parent: 0
 blocked_by: [1, 2]
-assignee: marcosenrique.gil
+assignee: marcosgilf
 state: closed
 ---
 

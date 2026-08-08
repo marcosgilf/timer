@@ -4,7 +4,7 @@ title: iOS background audio — audio session and lookahead horizon
 labels: [wayfinder:grilling]
 parent: 0
 blocked_by: []
-assignee: marcosenrique.gil
+assignee: marcosgilf
 state: closed
 ---
 

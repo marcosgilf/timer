@@ -22,6 +22,28 @@ Applied here:
 - **Amplify learning.** Prototype branches and research branches are kept as primary sources rather
   than summarised and thrown away.
 
+### YAGNI — you aren't gonna need it
+
+The lean principle applied to the code you are tempted to write *right now*. Build for the behaviour
+in front of you, not the one you can imagine.
+
+- A ticket ships **only what its own acceptance criteria demand**. If Countdown is the slice, Home
+  lists Countdown — not six buttons where five do nothing. Placeholders are inventory: they look like
+  progress, they need maintaining, and they lie to the user about what works.
+- **No abstraction until the second case exists.** An interface with one implementation, a factory
+  with one product, a config value nobody changes, a generic used once — deleted on sight. The second
+  caller justifies the abstraction, and it arrives with better information than you have now.
+- **No dependency for what a few lines do.** Reach for the platform first: `<dialog>`, form controls,
+  CSS, `localStorage`, `AudioContext`. Every dependency is bytes to precache, a supply chain, and an
+  upgrade you will owe.
+- **No code for a future requirement.** If it is genuinely coming it will be a ticket; write it then,
+  when the requirement is real and its shape is known.
+- Deliberate shortcuts that cut a real corner get a `ponytail:` comment naming the ceiling and the
+  upgrade path, so the trade-off is visible instead of forgotten.
+
+The test before writing anything: *what breaks for the user if I leave this out?* No answer means
+leave it out.
+
 ### DDD, the half that pays
 
 Full tactical DDD — aggregates, repositories, application services, an anti-corruption layer — would

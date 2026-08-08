@@ -4,7 +4,7 @@ title: Screen layout and config UI — prototype
 labels: [wayfinder:prototype]
 parent: 0
 blocked_by: [1]
-assignee: marcosenrique.gil
+assignee: marcosgilf
 state: closed
 ---
 

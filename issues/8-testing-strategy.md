@@ -4,7 +4,7 @@ title: Testing strategy — vitest unit plus Playwright e2e
 labels: [wayfinder:grilling]
 parent: 0
 blocked_by: [1, 2, 4]
-assignee: marcosenrique.gil
+assignee: marcosgilf
 state: closed
 ---
 

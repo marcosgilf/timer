@@ -27,6 +27,8 @@ stays fully correct without any of it. See [iOS background audio](10-ios-backgro
 - [ ] No silent-video or other keepalive hacks
 - [ ] Returning after the device slept jumps to the correct Phase and drops missed cues rather than
       replaying them
+- [ ] Vibration fires where `navigator.vibrate` exists and is skipped silently where it does not;
+      patterns per [ticket 3](3-audio-and-haptic-cue-model.md)
 - [ ] Verified on a real iOS device and a real Android device; results noted in the ticket
 
 ## Blocked by

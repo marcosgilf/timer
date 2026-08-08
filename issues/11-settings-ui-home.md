@@ -4,7 +4,7 @@ title: Where cue and app settings live in the UI
 labels: [wayfinder:grilling]
 parent: 0
 blocked_by: []
-assignee: marcosenrique.gil
+assignee: marcosgilf
 state: closed
 ---
 
