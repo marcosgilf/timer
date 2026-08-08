@@ -1,0 +1,68 @@
+---
+/**
+ * Top navigation bar: optional action in each corner, title centred.
+ * Properties in, events out — emits `nav:back` and `nav:close`; it decides nothing itself.
+ */
+interface Props {
+  title: string;
+  back?: string;
+  close?: string;
+}
+
+const { title, back, close } = Astro.props;
+---
+
+<nav class="topnav">
+  {
+    back ? (
+      <button type="button" class="corner" data-nav="back" aria-label={back}>
+        ←
+      </button>
+    ) : (
+      <span class="corner" />
+    )
+  }
+  <span class="title">{title}</span>
+  {
+    close ? (
+      <button type="button" class="corner" data-nav="close" aria-label={close}>
+        ✕
+      </button>
+    ) : (
+      <span class="corner" />
+    )
+  }
+</nav>
+
+<script>
+  document.querySelectorAll<HTMLElement>("nav.topnav").forEach((nav) => {
+    nav.addEventListener("click", (event) => {
+      const action = (event.target as HTMLElement).closest<HTMLElement>("[data-nav]")?.dataset.nav;
+      if (action) nav.dispatchEvent(new CustomEvent(`nav:${action}`, { bubbles: true }));
+    });
+  });
+</script>
+
+<style>
+  .topnav {
+    display: grid;
+    grid-template-columns: var(--tap) 1fr var(--tap);
+    align-items: center;
+    margin-bottom: 1rem;
+    color: var(--muted);
+  }
+
+  .title {
+    text-align: center;
+    text-transform: capitalize;
+  }
+
+  .corner {
+    display: grid;
+    place-items: center;
+    min-height: var(--tap);
+    font-size: 1.25rem;
+    border: 0;
+    color: var(--muted);
+  }
+</style>

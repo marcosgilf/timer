@@ -1,0 +1,73 @@
+:root {
+  color-scheme: light dark;
+
+  --bg: #faf9f7;
+  --fg: #16150f;
+  --muted: #6b6a63;
+  --line: #dcdad4;
+  --work: #1f9d55;
+  --rest: #d9453b;
+  --prepare: #8a7f2f;
+
+  --radius: 0.75rem;
+  --tap: 3rem;
+  --gap: 0.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f0f0d;
+    --fg: #f4f2ec;
+    --muted: #97958c;
+    --line: #2a2925;
+    --work: #35c977;
+    --rest: #ff5f52;
+    --prepare: #d7c76a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  padding: 1rem;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.4 system-ui, sans-serif;
+}
+
+main {
+  width: min(100%, 46rem);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  min-height: var(--tap);
+  padding: 0.75rem;
+  cursor: pointer;
+}
+
+button.primary {
+  background: var(--work);
+  border-color: var(--work);
+  color: #fff;
+}
+
+a {
+  color: inherit;
+}
+
+:where(button, a, input):focus-visible {
+  outline: 3px solid var(--work);
+  outline-offset: 2px;
+}

@@ -1,0 +1,134 @@
+---
+/**
+ * A minutes/seconds duration control: stepper column, two digit fields, stepper column.
+ * Properties in, events out — emits `duration:change` with `{ minutes, seconds }`.
+ * It knows nothing about Routines; the page decides what the numbers mean.
+ */
+interface Props {
+  label: string;
+  minutes: number;
+  seconds: number;
+  /** Seconds added or removed per tap of the right-hand column. */
+  secondStep?: number;
+}
+
+const { label, minutes, seconds, secondStep = 5 } = Astro.props;
+const pad = (value: number) => String(value).padStart(2, "0");
+---
+
+<div class="field" data-duration data-second-step={secondStep}>
+  <label id={`${label}-label`}>{label}</label>
+  <div class="row" role="group" aria-labelledby={`${label}-label`}>
+    <div class="steppers">
+      <button type="button" data-step="1" data-unit="minutes" aria-label="Add a minute">+</button>
+      <button type="button" data-step="-1" data-unit="minutes" aria-label="Remove a minute">−</button>
+    </div>
+
+    <span class="cell">
+      <span class="unit">min</span>
+      <input type="text" inputmode="numeric" maxlength="2" data-unit="minutes" value={pad(minutes)} aria-label="Minutes" />
+    </span>
+    <span class="colon">:</span>
+    <span class="cell">
+      <span class="unit">sec</span>
+      <input type="text" inputmode="numeric" maxlength="2" data-unit="seconds" value={pad(seconds)} aria-label="Seconds" />
+    </span>
+
+    <div class="steppers">
+      <button type="button" data-step={secondStep} data-unit="seconds" aria-label={`Add ${secondStep} seconds`}>+</button>
+      <button type="button" data-step={-secondStep} data-unit="seconds" aria-label={`Remove ${secondStep} seconds`}>−</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-duration]").forEach((field) => {
+    const input = (unit: string) => field.querySelector<HTMLInputElement>(`input[data-unit="${unit}"]`)!;
+    const read = (unit: string) => Number.parseInt(input(unit).value, 10) || 0;
+
+    const emit = () => {
+      const detail = { minutes: read("minutes"), seconds: read("seconds") };
+      field.dispatchEvent(new CustomEvent("duration:change", { detail, bubbles: true }));
+    };
+
+    field.addEventListener("click", (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-step]");
+      if (!button) return;
+      const unit = button.dataset.unit!;
+      input(unit).value = String(Math.max(0, read(unit) + Number(button.dataset.step)));
+      emit();
+    });
+
+    field.addEventListener("change", emit);
+  });
+</script>
+
+<style>
+  .field {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  label {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+
+  .steppers {
+    display: grid;
+    gap: 0.35rem;
+    margin-top: 1.05rem;
+  }
+
+  .steppers button {
+    width: 3.25rem;
+    min-height: 2.75rem;
+    padding: 0;
+    font-size: 1.25rem;
+  }
+
+  .cell {
+    display: grid;
+    justify-items: center;
+    gap: 0.15rem;
+  }
+
+  .unit {
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+
+  .cell input {
+    font: inherit;
+    font-size: 3rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    width: 4.5rem;
+    height: 5.85rem;
+    padding: 0;
+    text-align: center;
+    color: var(--fg);
+    background: transparent;
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .colon {
+    display: grid;
+    place-items: center;
+    height: 5.85rem;
+    margin-top: 1.05rem;
+    font-size: 3rem;
+    font-weight: 800;
+  }
+</style>

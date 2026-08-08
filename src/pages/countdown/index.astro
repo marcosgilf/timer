@@ -1,0 +1,162 @@
+---
+import TopNav from "../../components/TopNav.astro";
+import DurationField from "../../components/DurationField.astro";
+import TimerDisplay from "../../components/TimerDisplay.astro";
+import AppLayout from "../../layouts/AppLayout.astro";
+import { countdown } from "../../domain/routine.ts";
+
+// Screens live on one page so the running Clock survives the Config → Running → Done flow without
+// being serialised anywhere. Persistence is ticket 17.
+const initial = countdown();
+const minutes = Math.floor(initial.workMs / 60_000);
+const seconds = Math.round((initial.workMs % 60_000) / 1000);
+---
+
+<AppLayout title="Countdown">
+  <div data-screen="config">
+    <TopNav title="Countdown" back="Back to modes" />
+    <DurationField label="Time" minutes={minutes} seconds={seconds} />
+    <div class="cta">
+      <button type="button" class="primary" data-action="start">Start</button>
+    </div>
+  </div>
+
+  <div data-screen="running" hidden>
+    <TopNav title="Countdown" back="Back to setup" close="Quit" />
+    <TimerDisplay />
+    <div class="controls">
+      <button type="button" class="primary" data-action="toggle" aria-label="Pause">⏸</button>
+    </div>
+  </div>
+
+  <div data-screen="done" hidden>
+    <TopNav title="Done" back="Back to setup" close="Home" />
+    <p class="summary" data-summary></p>
+    <div class="cta">
+      <button type="button" class="primary" data-action="restart">Restart</button>
+    </div>
+  </div>
+</AppLayout>
+
+<script>
+  import { elapsedMs, isPaused, pause, resume, start } from "../../domain/clock.ts";
+  import type { Clock } from "../../domain/clock.ts";
+  import { phaseAt } from "../../domain/phase.ts";
+  import { countdown, DEFAULT_PREPARE_MS, durationFromParts } from "../../domain/routine.ts";
+
+  const screens = document.querySelectorAll<HTMLElement>("[data-screen]");
+  const digits = document.querySelector<HTMLElement>("[data-digits]")!;
+  const bar = document.querySelector<HTMLElement>("[data-bar]")!;
+  const phaseWord = document.querySelector<HTMLElement>("[data-phase-word]")!;
+  const summary = document.querySelector<HTMLElement>("[data-summary]")!;
+  const toggle = document.querySelector<HTMLButtonElement>('[data-action="toggle"]')!;
+
+  let routine = countdown();
+  let clock: Clock | null = null;
+
+  const show = (name: string) => {
+    screens.forEach((screen) => {
+      screen.hidden = screen.dataset.screen !== name;
+    });
+    if (name !== "running") document.body.removeAttribute("data-phase");
+  };
+
+  /** Countdowns round up, so the last second reads 1 and 0 never flashes. */
+  const mmss = (ms: number, round: (n: number) => number) => {
+    const total = Math.max(0, round(ms / 1000));
+    return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+  };
+
+  function frame() {
+    if (!clock) return;
+
+    const phase = phaseAt(elapsedMs(clock, Date.now()), routine);
+
+    if (phase.kind === "done") {
+      // The prepare countdown is not part of what you timed.
+      summary.textContent = mmss(phase.totalElapsedMs - DEFAULT_PREPARE_MS, Math.floor);
+      clock = null;
+      show("done");
+      return;
+    }
+
+    document.body.dataset.phase = phase.kind;
+    digits.textContent = mmss(phase.remainingMs, Math.ceil);
+    phaseWord.textContent = phase.kind;
+    bar.style.width = `${phase.progress * 100}%`;
+
+    // Recomputed from the clock every frame — never incremented, so nothing drifts.
+    if (!isPaused(clock)) requestAnimationFrame(frame);
+  }
+
+  function run() {
+    clock = start(Date.now());
+    toggle.textContent = "⏸";
+    toggle.setAttribute("aria-label", "Pause");
+    show("running");
+    requestAnimationFrame(frame);
+  }
+
+  document.addEventListener("duration:change", (event) => {
+    const { minutes, seconds } = (event as CustomEvent<{ minutes: number; seconds: number }>).detail;
+    routine = countdown(durationFromParts(minutes, seconds));
+  });
+
+  document.addEventListener("nav:back", () => {
+    if (document.querySelector<HTMLElement>('[data-screen="config"]')!.hidden) {
+      clock = null;
+      show("config");
+    } else {
+      location.href = "/";
+    }
+  });
+
+  document.addEventListener("nav:close", () => {
+    location.href = "/";
+  });
+
+  document.addEventListener("click", (event) => {
+    const action = (event.target as HTMLElement).closest<HTMLElement>("[data-action]")?.dataset.action;
+    if (!action) return;
+
+    if (action === "start" || action === "restart") run();
+
+    if (action === "toggle" && clock) {
+      const paused = isPaused(clock);
+      clock = paused ? resume(clock, Date.now()) : pause(clock, Date.now());
+      toggle.textContent = paused ? "⏸" : "▶";
+      toggle.setAttribute("aria-label", paused ? "Pause" : "Resume");
+      if (paused) requestAnimationFrame(frame);
+    }
+  });
+</script>
+
+<style>
+  .cta {
+    display: flex;
+    margin-top: 1.5rem;
+  }
+
+  .cta button {
+    flex: 1;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+  }
+
+  .controls button {
+    flex: 0 1 10rem;
+    min-height: 2.75rem;
+    padding: 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .summary {
+    font-size: 2.5rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+</style>

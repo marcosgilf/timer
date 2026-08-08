@@ -1,11 +1,37 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import AppLayout from "../layouts/AppLayout.astro";
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<AppLayout title="Timer">
+  <h1>Timer</h1>
+  <nav class="modes">
+    <a href="/countdown/">Countdown</a>
+  </nav>
+</AppLayout>
+
+<style>
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .modes {
+    display: grid;
+    gap: var(--gap);
+  }
+
+  .modes a {
+    display: grid;
+    place-items: center;
+    min-height: 4rem;
+    font-size: 1.25rem;
+    text-decoration: none;
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  @media (min-width: 900px) {
+    .modes {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>
