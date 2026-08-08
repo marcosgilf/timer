@@ -31,9 +31,9 @@ everything the browser provides.**
 
 - The **domain** knows Routine, Mode, Phase, Round, Clock, Cue. It has no idea a screen, a speaker or
   `localStorage` exists.
-- **Infrastructure** adapts browser APIs to the domain's needs. Each adapter is thin and replaceable,
-  and each one is a place a platform can fail without the domain caring — which is exactly the
-  progressive-enhancement rule from `docs/spec.md` §6.
+- **Browser adapters** in `src/lib/` wrap the platform APIs the domain needs acting on. Each adapter is
+  thin and replaceable, and each is a place a platform can fail without the domain caring — which is
+  exactly the progressive-enhancement rule from `docs/spec.md` §6.
 - **UI** renders domain state and turns input into domain calls.
 
 The test of a boundary: if a file imports `window`, `document`, `navigator` or `localStorage`, it is
@@ -51,27 +51,43 @@ asserts the mock, not the behaviour. Those are covered by the five Playwright te
 
 ## Folders
 
-Astro's conventions where Astro owns the file (`src/pages`, `src/layouts`, `src/components`,
-`src/styles`), plus two folders that carry the DDD boundary:
+Astro's default structure everywhere Astro owns the file, plus one folder that carries the DDD
+boundary: `src/domain/`.
 
 ```
 src/
-├── domain/       pure TypeScript: Routine, Phase, Clock, Cue. No browser APIs. Tests live beside.
-├── infra/        adapters over browser APIs: storage, audio, haptics, wake lock, audio session.
-├── components/   Astro components (markup + scoped styles + the DOM wiring for one screen)
-├── layouts/      the shared app shell (top nav, theme, viewport)
-├── pages/        routes (Astro convention)
+├── domain/       pure TypeScript: Routine, Phase, Clock, Cue. No browser APIs. Tests beside.
+├── lib/          browser adapters: storage, audio, haptics, wake lock, audio session
+├── components/   reusable UI components — app-agnostic, props in / events out
+├── layouts/      the app shell (top nav slot, theme, viewport)
+├── pages/        routes, and the screen composition for each
 └── styles/       design tokens and global CSS
 docs/             spec, architecture
 issues/           decision tickets (wayfinder) and build tickets
 ```
 
-Rules that keep the boundary honest:
+**`infra/` is reserved for deployment infrastructure as code** (Terraform, Netlify/DNS config) at the
+repository root, outside `src/`, following the pattern in `../blog/infra/netlify`. Nothing needs it
+yet — it is named here so browser adapters never squat on the word.
 
-- `domain/` imports nothing from `infra/`, `components/` or Astro. Dependencies point **inwards**.
-- `infra/` may import `domain/` types; never the reverse.
+### `components/` is a component library, not app parts
+
+Everything in `src/components/` must be usable by another app: a stepper, a digit display, a top nav,
+a progress bar, a mode button. The contract is **properties in, events out** — a component receives its
+data as props and reports intent by dispatching a `CustomEvent`. It never reaches into app state, never
+imports `src/domain/`, never reads storage, and never decides what happens next.
+
+An example of the split: `<Stepper value min max step>` emits `change`; deciding that the change means
+`routine.workMs` is now 30s belongs to the page composing it. Screen composition — anything that knows
+what a Routine *is* — lives in `src/pages/`.
+
+Rules that keep the boundaries honest:
+
+- `domain/` imports nothing from `lib/`, `components/` or Astro. Dependencies point **inwards**.
+- `lib/` may import `domain/` types; never the reverse.
+- `components/` imports neither `domain/` nor `lib/`.
 - Logic lives in `.ts` files, not in `.astro` — oxlint and vitest both see `.ts`, and `.astro` stays
-  markup plus a thin `<script>` that wires a component to domain and infra.
+  markup plus a thin `<script>` that wires things together.
 - Tests are colocated: `src/domain/phase.test.ts` beside `src/domain/phase.ts`.
 
 ## Why not more
