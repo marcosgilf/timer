@@ -16,7 +16,7 @@ Uses `@vite-pwa/astro@1.2.0`, which builds correctly on Astro 7 despite its peer
 [PWA platform research](4-pwa-offline-install-wakelock-research.md) for the two gotchas
 (`workbox-window` must be an explicit devDependency; nothing is injected into the HTML for you).
 
-Settles the app name / icons / `theme_color` / iOS install copy Open questions in
+Settles the app name / icons / `theme_color` Open questions in
 [docs/spec.md](../docs/spec.md) §10 — the manifest cannot be written without them.
 
 ## Acceptance criteria
@@ -26,11 +26,12 @@ Settles the app name / icons / `theme_color` / iOS install copy Open questions i
 - [ ] Installable on Android (Chromium install criteria met) and add-to-home-screen works on iOS
 - [ ] Loading the app, going offline and reloading still works
 - [ ] `registerType: 'prompt'` — a new version shows a reload prompt; never auto-reloads
-- [ ] The update prompt has a defined place in the screen shell and cannot appear mid-Routine
-      without the user choosing it
-- [ ] Static install guidance copy for iOS is written (there is no `beforeinstallprompt`)
 - [ ] `/// <reference types="vite-plugin-pwa/client" />` added so virtual modules type-check
 - [ ] Deployed preview passes an installability check
+
+Out of this slice on purpose: static iOS install-guidance copy — nobody has failed to install it yet,
+and the copy is worth writing once someone actually gets stuck. The update prompt is one button with
+one line of text; it does not need a designed placement until there is a screen it gets in the way of.
 
 ## Blocked by
 

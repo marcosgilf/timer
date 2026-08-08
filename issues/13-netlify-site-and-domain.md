@@ -4,7 +4,7 @@ title: Netlify site and timer.marcosgilf.com
 labels: [wayfinder:task]
 parent: 0
 blocked_by: [12]
-assignee: marcosenrique.gil
+assignee: marcosgilf
 state: closed
 ---
 

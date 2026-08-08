@@ -2,7 +2,7 @@
 id: 17
 title: It remembers
 labels: [build:slice]
-blocked_by: [15]
+blocked_by: [22]
 assignee:
 state: open
 ---
@@ -30,6 +30,9 @@ Two `localStorage` keys with different lifetimes, per [Persistence model](7-pers
 - [ ] Writes survive `QuotaExceededError` (Safari private browsing); the app is fully usable with
       persistence disabled
 - [ ] Parse/validate logic is unit-tested with hostile inputs
+
+Out of this slice on purpose: a migration path for `v2` — there is no `v1` in the wild yet, so the
+unknown-version branch resets to defaults and that is the whole strategy.
 
 ## Blocked by
 

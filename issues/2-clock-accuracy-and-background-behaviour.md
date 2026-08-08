@@ -4,7 +4,7 @@ title: Clock accuracy and background behaviour
 labels: [wayfinder:grilling]
 parent: 0
 blocked_by: []
-assignee: marcosenrique.gil
+assignee: marcosgilf
 state: closed
 ---
 

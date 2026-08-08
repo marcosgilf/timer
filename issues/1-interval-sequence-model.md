@@ -4,7 +4,7 @@ title: Interval sequence model — one engine for six modes
 labels: [wayfinder:grilling]
 parent: 0
 blocked_by: []
-assignee: marcosenrique.gil
+assignee: marcosgilf
 state: closed
 ---
 

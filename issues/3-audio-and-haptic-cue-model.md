@@ -4,7 +4,7 @@ title: Audio and haptic cue model
 labels: [wayfinder:grilling]
 parent: 0
 blocked_by: [1]
-assignee: marcosenrique.gil
+assignee: marcosgilf
 state: closed
 ---
 
