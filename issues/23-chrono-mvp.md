@@ -72,3 +72,19 @@ past the hour mark and drops to `13vw`, keeping the digits at ~54% of viewport w
   moved the primary button under the user's thumb mid-Routine. Reset is a no-op at `00:00` rather
   than disabled, because disabled controls leave the tab order and invite contrast problems. The
   focus-restoration workaround is gone with the behaviour that needed it.
+
+### Theme: gym clock
+
+Dark is the only theme, not a `prefers-color-scheme` branch — a wall clock is a wall clock. Panel
+`#0b0b0c` (a hair off pure black, so OLED does not smear as digits change), digits `#ff2b2b` with a
+soft glow. Contrast is 5.3:1, above AA for normal text and far above the 3:1 needed at this size; the
+glow is decoration and the digits read the same with it stripped.
+
+Pico's accent variables are pointed at the same red, so buttons and focus rings belong to the clock.
+Note that the **classless** Pico build ships no `.secondary`, so `class="secondary"` was silently
+doing nothing and both buttons looked identical — Reset is now outlined via our own rule, which is
+also one fewer class attribute.
+
+Digit sizing is arithmetic, not taste: `00:00` measures ~2.73em in tabular figures and `main`
+reserves 0.5rem of padding per side, so the viewport factor must stay under ~34vw. At 35vw the digits
+were clipped by 2px at 320px wide; 32vw leaves room for a font stack that measures slightly wider.
