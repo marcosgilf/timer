@@ -1,0 +1,12 @@
+{
+  "json.schemas": [
+    {
+      "fileMatch": [".oxlintrc.json"],
+      "url": "./node_modules/oxlint/configuration_schema.json"
+    },
+    {
+      "fileMatch": [".oxfmtrc.json"],
+      "url": "./node_modules/oxfmt/configuration_schema.json"
+    }
+  ]
+}
