@@ -67,6 +67,17 @@ time {
     0 0 0.22em var(--digit-glow);
 }
 
+/*
+ * The colon sits on the baseline, so its dots centre on the x-height while lining figures centre far
+ * higher. Lifting it by ~0.1em puts the two optical centres on the same line. Tightening the space
+ * around it keeps the group from drifting wider than the measured 2.73em.
+ */
+.separator {
+  display: inline-block;
+  margin-inline: -0.06em;
+  transform: translateY(-0.09em);
+}
+
 /* Deliberately modest: present, reachable, and not competing with the digits. */
 .controls {
   display: flex;
