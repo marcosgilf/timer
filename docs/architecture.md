@@ -5,6 +5,20 @@ How this codebase is organised and why. Companion to [`docs/spec.md`](./spec.md)
 
 ## Principles
 
+### MVP first, then iterate
+
+The product grows one **shippable capability** at a time, each usable end to end by a real person
+before the next begins. Not layers, not screens-without-behaviour, not six presets at once:
+
+1. **Chrono** — landing page, Start, Pause, Reset. The whole app, working.
+2. **Installable and offline** — the same app, now a PWA.
+3. **Count down** — plus the configuration screen that feeds it.
+4. **Rounds** — work, rest, repeat, which makes Tabata/EMOM/Pomodoro *configurable* without any of
+   them existing as a feature.
+
+Anything not needed by the capability in hand is not built. If a user cannot do something new when a
+slice lands, the slice was the wrong shape.
+
 ### Lean — the user decides what is waste
 
 Everything that does not end up helping someone time a Routine is waste: speculative abstraction,
@@ -71,6 +85,37 @@ Not TDD'd: markup, styling, and adapters that only forward a call to a browser A
 asserts the mock, not the behaviour. Those are covered by the five Playwright tests in
 `docs/spec.md` §8, or deliberately not covered at all.
 
+## Styling and markup
+
+### Semantic HTML, classless CSS
+
+[Pico CSS](https://picocss.com/) in its **classless** form: correct semantic elements get sensible
+styles with no class attributes at all. `<nav>`, `<button>`, `<form>`, `<article>`, `<dialog>` and
+`<input>` are the design system.
+
+- Reach for the right element before any styling: a button that acts is `<button>`, navigation is
+  `<nav><ul>`, a grouped control is `<fieldset>`.
+- Custom CSS is the exception and is justified by something Pico cannot express — the room-readable
+  digits are the obvious one. It stays scoped to the component that needs it.
+- No utility classes, no CSS framework classes, no component library.
+
+The payoff is that accessibility, dark mode and responsive behaviour come from the markup being right
+rather than from a stylesheet fighting it.
+
+### WCAG 2.2 AA is a requirement, not a polish pass
+
+Every slice ships accessible, because retrofitting is more work than doing it once:
+
+- **Contrast** — 4.5:1 for text, 3:1 for UI components and graphics, in both colour schemes.
+- **Colour is never alone** (1.4.1) — the Phase always has a text label beside its colour.
+- **Keyboard** — everything operable, visible focus (2.4.7), focus never obscured (2.4.11, new in 2.2).
+- **Target size** — at least 24×24 CSS px (2.5.8, new in 2.2); the timer's controls are far larger,
+  because they are used with sweaty hands.
+- **Status changes** — announced politely where it helps and silenced where it would flood a screen
+  reader: a per-second `aria-live` clock is unusable, so the running time is `aria-live="off"` with
+  state changes (started, paused, finished) announced instead.
+- **Motion and orientation** — no orientation lock, no animation that ignores `prefers-reduced-motion`.
+
 ## Folders
 
 Astro's default structure everywhere Astro owns the file, plus one folder that carries the DDD
@@ -120,5 +165,6 @@ Rules that keep the boundaries honest:
   is allowed to fail silently. An interface with one implementation is a guess about a second one.
 - **No state-management library** — state is three numbers (`Clock`) plus a `Routine`; the domain
   derives the rest.
-- **No component framework** — plain Astro and DOM, per `docs/spec.md`. React arrives only if a slice
-  proves it mandatory, and that proof goes in a ticket.
+- **No component framework** — plain Astro and DOM. React arrives only if a slice proves it
+  mandatory, and that proof goes in a ticket.
+- **No design system beyond Pico** — classless semantic CSS covers everything except the digits.

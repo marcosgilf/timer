@@ -1,10 +1,10 @@
 ---
 id: 19
 title: Installable and offline
-labels: [build:slice]
+labels: [build:superseded]
 blocked_by: [14]
 assignee:
-state: open
+state: closed
 ---
 
 ## What to build
@@ -36,3 +36,13 @@ one line of text; it does not need a designed placement until there is a screen 
 ## Blocked by
 
 - 14 — Countdown, end to end
+
+
+## Superseded
+
+Retired by the MVP-first re-plan (see `docs/spec.md` §0). This ticket assumed named Modes on a Home
+screen; the product now offers capabilities — count up, count down, repeat — and the user's own
+configuration is what makes a Tabata or a Pomodoro. Work is re-cut into tickets 23–26.
+
+Kept unclosed-in-spirit, not deleted: its acceptance criteria are still the best description of the
+behaviour, and the tickets that replace it borrow from them.

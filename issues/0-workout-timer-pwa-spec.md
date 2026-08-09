@@ -100,6 +100,14 @@ Shipped at `timer.marcosgilf.com`.
   into `ci.yml` (orchestrator) + reusable `qa.yml` / `deploy-dev.yml` / `deploy-prod.yml`; PRs deploy to
   the alias `pr-<number>` and nothing deploys unless `qa` is green.
 
+## Plan revision — MVP first
+
+After the spec landed, the build plan was re-cut: named Modes are retired (see "Modes are not a
+concept" in `CONTEXT.md`), delivery is capability-first (Chrono, then PWA, then count down, then
+rounds), styling is Pico CSS classless with semantic HTML, and WCAG 2.2 AA is a requirement of every
+slice. Build tickets 14-22 are superseded by 23-26; `docs/spec.md` §0 records what changed and what
+still stands.
+
 ## Map complete
 
 Every ticket is closed and the destination — [`docs/spec.md`](../docs/spec.md) — is reached, with the
