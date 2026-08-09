@@ -45,21 +45,25 @@ const pad = (value: number) => String(value).padStart(2, "0");
   document.querySelectorAll<HTMLElement>("[data-duration]").forEach((field) => {
     const input = (unit: string) => field.querySelector<HTMLInputElement>(`input[data-unit="${unit}"]`)!;
     const read = (unit: string) => Number.parseInt(input(unit).value, 10) || 0;
+    const pad = (value: number) => String(value).padStart(2, "0");
+    const totalSeconds = () => read("minutes") * 60 + read("seconds");
 
-    const emit = () => {
-      const detail = { minutes: read("minutes"), seconds: read("seconds") };
+    /** Always two digits each, seconds carrying into minutes: 65s shows as 01:05, never 00:65. */
+    const write = (seconds: number) => {
+      const total = Math.max(0, Math.min(99 * 60 + 59, seconds));
+      const detail = { minutes: Math.floor(total / 60), seconds: total % 60 };
+      input("minutes").value = pad(detail.minutes);
+      input("seconds").value = pad(detail.seconds);
       field.dispatchEvent(new CustomEvent("duration:change", { detail, bubbles: true }));
     };
 
     field.addEventListener("click", (event) => {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-step]");
       if (!button) return;
-      const unit = button.dataset.unit!;
-      input(unit).value = String(Math.max(0, read(unit) + Number(button.dataset.step)));
-      emit();
+      write(totalSeconds() + Number(button.dataset.step) * (button.dataset.unit === "minutes" ? 60 : 1));
     });
 
-    field.addEventListener("change", emit);
+    field.addEventListener("change", () => write(totalSeconds()));
   });
 </script>
 
@@ -90,7 +94,7 @@ const pad = (value: number) => String(value).padStart(2, "0");
   }
 
   .steppers button {
-    width: 3.25rem;
+    width: 3rem;
     min-height: 2.75rem;
     padding: 0;
     font-size: 1.25rem;
@@ -109,11 +113,11 @@ const pad = (value: number) => String(value).padStart(2, "0");
 
   .cell input {
     font: inherit;
-    font-size: 3rem;
+    font-size: clamp(2rem, 13vw, 3rem);
     font-weight: 800;
     font-variant-numeric: tabular-nums;
     line-height: 1;
-    width: 4.5rem;
+    width: clamp(3rem, 20vw, 4.5rem);
     height: 5.85rem;
     padding: 0;
     text-align: center;
@@ -128,7 +132,7 @@ const pad = (value: number) => String(value).padStart(2, "0");
     place-items: center;
     height: 5.85rem;
     margin-top: 1.05rem;
-    font-size: 3rem;
+    font-size: clamp(2rem, 13vw, 3rem);
     font-weight: 800;
   }
 </style>

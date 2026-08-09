@@ -25,7 +25,7 @@ const seconds = Math.round((initial.workMs % 60_000) / 1000);
     <TopNav title="Countdown" back="Back to setup" close="Quit" />
     <TimerDisplay />
     <div class="controls">
-      <button type="button" class="primary" data-action="toggle" aria-label="Pause">⏸</button>
+      <button type="button" class="primary" data-action="toggle">Pause</button>
     </div>
   </div>
 
@@ -42,7 +42,7 @@ const seconds = Math.round((initial.workMs % 60_000) / 1000);
   import { elapsedMs, isPaused, pause, resume, start } from "../../domain/clock.ts";
   import type { Clock } from "../../domain/clock.ts";
   import { phaseAt } from "../../domain/phase.ts";
-  import { countdown, DEFAULT_PREPARE_MS, durationFromParts } from "../../domain/routine.ts";
+  import { countdown, durationFromParts, totalDurationMs } from "../../domain/routine.ts";
 
   const screens = document.querySelectorAll<HTMLElement>("[data-screen]");
   const digits = document.querySelector<HTMLElement>("[data-digits]")!;
@@ -73,8 +73,9 @@ const seconds = Math.round((initial.workMs % 60_000) / 1000);
     const phase = phaseAt(elapsedMs(clock, Date.now()), routine);
 
     if (phase.kind === "done") {
-      // The prepare countdown is not part of what you timed.
-      summary.textContent = mmss(phase.totalElapsedMs - DEFAULT_PREPARE_MS, Math.floor);
+      // What the user configured, never what the clock measured: a hidden tab pauses rAF, so `done`
+      // can be noticed long after it happened and measured elapsed would overstate the Routine.
+      summary.textContent = mmss(totalDurationMs(routine), Math.floor);
       clock = null;
       show("done");
       return;
@@ -91,8 +92,7 @@ const seconds = Math.round((initial.workMs % 60_000) / 1000);
 
   function run() {
     clock = start(Date.now());
-    toggle.textContent = "⏸";
-    toggle.setAttribute("aria-label", "Pause");
+    toggle.textContent = "Pause";
     show("running");
     requestAnimationFrame(frame);
   }
@@ -124,8 +124,7 @@ const seconds = Math.round((initial.workMs % 60_000) / 1000);
     if (action === "toggle" && clock) {
       const paused = isPaused(clock);
       clock = paused ? resume(clock, Date.now()) : pause(clock, Date.now());
-      toggle.textContent = paused ? "⏸" : "▶";
-      toggle.setAttribute("aria-label", paused ? "Pause" : "Resume");
+      toggle.textContent = paused ? "Pause" : "Resume";
       if (paused) requestAnimationFrame(frame);
     }
   });

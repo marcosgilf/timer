@@ -5,6 +5,7 @@ import {
   durationFromParts,
   MAX_DURATION_MS,
   MIN_DURATION_MS,
+  totalDurationMs,
 } from "./routine.ts";
 
 describe("clampDuration", () => {
@@ -40,5 +41,11 @@ describe("countdown", () => {
 
   it("clamps whatever it is given", () => {
     expect(countdown(0).workMs).toBe(MIN_DURATION_MS);
+  });
+});
+
+describe("totalDurationMs", () => {
+  it("is what the user configured, not what the clock measured", () => {
+    expect(totalDurationMs(countdown(600_000))).toBe(600_000);
   });
 });

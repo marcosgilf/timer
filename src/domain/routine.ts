@@ -11,7 +11,10 @@ export type Routine = {
 
 export const MIN_DURATION_MS = 1000;
 export const MAX_DURATION_MS = 99 * 60_000 + 59_000;
-export const DEFAULT_PREPARE_MS = 10_000;
+export const DEFAULT_PREPARE_MS = 5000;
+
+/** How long the Routine itself runs, prepare countdown excluded. */
+export const totalDurationMs = (routine: Routine): number => routine.workMs;
 
 /** Clamps silently: invalid input never blocks Start and never shows an error. */
 export const clampDuration = (ms: number): number =>
