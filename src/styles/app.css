@@ -6,48 +6,55 @@ main {
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 1.5rem;
+  gap: 0.5rem;
   min-height: 100dvh;
   /* Respect notches; never let a wide child scroll the page sideways. */
-  padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
+  padding-inline: max(0.5rem, env(safe-area-inset-left)) max(0.5rem, env(safe-area-inset-right));
   overflow-x: hidden;
   text-align: center;
 }
 
+main > h1 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--pico-muted-color);
+}
+
 /*
- * "00:00" is roughly 2.7em wide in tabular figures, so the viewport factor must stay under 100/2.7
- * to fit. Past an hour the string grows to "10:03:07" (~4.8em) and needs a smaller factor — same
- * reason, different arithmetic.
+ * The digits are the product, so they take as much width as the viewport allows. "00:00" is roughly
+ * 2.7em wide in tabular figures and the display is capped at 99:59, so the character count never
+ * grows and the factor below can sit close to the 100/2.7 ≈ 37 limit.
  */
 time {
   display: block;
+  margin: 0;
   max-width: 100%;
-  font-size: clamp(3.5rem, 24vw, 12rem);
+  font-size: min(35vw, 40vh, 20rem);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
   color: var(--pico-color);
 }
 
-time[data-hours] {
-  font-size: clamp(2rem, 13vw, 7rem);
-}
-
-/* Controls sit side by side and stay comfortably above the 24x24px minimum target size. */
+/* Deliberately modest: present, reachable, and not competing with the digits. */
 .controls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
   justify-content: center;
-  width: min(100%, 26rem);
+  width: min(100%, 22rem);
+  margin-top: 1rem;
 }
 
 .controls button {
-  flex: 1 1 8rem;
-  min-height: 3.5rem;
+  flex: 1;
+  min-height: 3rem;
   margin: 0;
-  font-size: 1.125rem;
+  padding-block: 0.5rem;
+  font-size: 1rem;
 }
 
 /* Announcements for assistive tech only — the visible digits are not a live region. */

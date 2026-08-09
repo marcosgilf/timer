@@ -12,7 +12,7 @@ import { formatElapsed } from "../domain/format.ts";
 
     <div class="controls">
       <button type="button" data-action="primary">Start</button>
-      <button type="button" class="secondary" data-action="reset" hidden>Reset</button>
+      <button type="button" class="secondary" data-action="reset">Reset</button>
     </div>
 
     <!--
@@ -26,7 +26,7 @@ import { formatElapsed } from "../domain/format.ts";
 <script>
   import { elapsedMs, isRunning, pause, reset, resume, start, stopped } from "../domain/clock.ts";
   import type { Clock } from "../domain/clock.ts";
-  import { announceElapsed, formatElapsed } from "../domain/format.ts";
+  import { announceElapsed, formatElapsed, MAX_ELAPSED_MS } from "../domain/format.ts";
 
   const display = document.querySelector<HTMLTimeElement>("[data-display]")!;
   const primary = document.querySelector<HTMLButtonElement>('[data-action="primary"]')!;
@@ -40,13 +40,18 @@ import { formatElapsed } from "../domain/format.ts";
     const ms = elapsedMs(clock, Date.now());
     display.textContent = formatElapsed(ms);
     display.dateTime = `PT${Math.floor(ms / 1000)}S`;
-    // The hours string is much wider, so it is sized differently. See src/styles/app.css.
-    display.toggleAttribute("data-hours", ms >= 3_600_000);
+    return ms;
   };
 
   /** One frame loop, always cancelled before another starts. */
   const tick = () => {
-    render();
+    // The display stops at 99:59, so running past it would be a lie. Pause there instead.
+    if (render() >= MAX_ELAPSED_MS) {
+      clock = pause(clock, Date.now());
+      announce(`Finished at ${announceElapsed(MAX_ELAPSED_MS)}`);
+      paint();
+      return;
+    }
     frame = requestAnimationFrame(tick);
   };
 
@@ -62,8 +67,6 @@ import { formatElapsed } from "../domain/format.ts";
   const paint = () => {
     const running = isRunning(clock);
     primary.textContent = running ? "Pause" : clock.startedAt === null ? "Start" : "Resume";
-    // Reset is only offered once there is something to reset, and never while running.
-    resetButton.hidden = running || clock.startedAt === null;
     render();
   };
 
@@ -82,12 +85,13 @@ import { formatElapsed } from "../domain/format.ts";
   });
 
   resetButton.addEventListener("click", () => {
+    // A no-op at 00:00 rather than a disabled control: disabled buttons leave the tab order, and a
+    // control that appears and disappears moves the other one under the user's thumb.
+    if (clock.startedAt === null) return;
     clock = reset(clock);
     stopTicking();
     announce("Reset");
     paint();
-    // Focus would otherwise be lost when this button hides itself.
-    primary.focus();
   });
 
   // rAF is throttled or paused in a hidden tab; the time is derived from the wall clock, so a single

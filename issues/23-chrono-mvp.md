@@ -60,3 +60,15 @@ Accessibility decisions worth keeping:
 One sizing bug found before it shipped: past an hour the string grows from `00:00` (~2.7em) to
 `10:03:07` (~4.8em) and would overflow a 320px screen at `24vw`. The element now carries `data-hours`
 past the hour mark and drops to `13vw`, keeping the digits at ~54% of viewport width at any size.
+
+### Revision after first review
+
+- **No hours.** The display is capped at `99:59` and the timer stops there rather than rendering a
+  time it cannot show. This also removes the `data-hours` sizing branch, so the string length is now
+  constant and the digits can be sized much more aggressively.
+- **Digits dominate**: `min(35vw, 40vh, 20rem)` — about 92% of viewport width, up from 60%. Controls
+  dropped to 48px tall and 22rem wide, present but not competing.
+- **Both buttons are always visible.** Reset no longer appears and disappears: the shifting layout
+  moved the primary button under the user's thumb mid-Routine. Reset is a no-op at `00:00` rather
+  than disabled, because disabled controls leave the tab order and invite contrast problems. The
+  focus-restoration workaround is gone with the behaviour that needed it.

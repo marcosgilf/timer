@@ -28,8 +28,9 @@ which is storage, not a code path.
 
 ## Chrono
 
-A Routine that counts up with no end and no configuration. The simplest thing the product does, and
-the first thing it shipped.
+A Routine that counts up with no configuration. The simplest thing the product does, and the first
+thing it shipped. It tops out at **99:59** — the display never grows an hours field, so the timer
+stops rather than showing a time it cannot render.
 
 ## Phase
 

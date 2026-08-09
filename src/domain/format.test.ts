@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatElapsed } from "./format.ts";
+import { announceElapsed, formatElapsed, MAX_ELAPSED_MS } from "./format.ts";
 
 describe("formatElapsed", () => {
   it("shows minutes and seconds", () => {
@@ -13,10 +13,14 @@ describe("formatElapsed", () => {
     expect(formatElapsed(1000)).toBe("00:01");
   });
 
-  it("grows an hours field only once it is needed", () => {
-    expect(formatElapsed(59 * 60_000 + 59_000)).toBe("59:59");
-    expect(formatElapsed(60 * 60_000)).toBe("1:00:00");
-    expect(formatElapsed(10 * 60 * 60_000 + 3 * 60_000 + 7000)).toBe("10:03:07");
+  it("keeps counting minutes past an hour instead of growing an hours field", () => {
+    expect(formatElapsed(60 * 60_000)).toBe("60:00");
+    expect(formatElapsed(90 * 60_000 + 7000)).toBe("90:07");
+  });
+
+  it("stops at the ceiling of 99:59", () => {
+    expect(formatElapsed(MAX_ELAPSED_MS)).toBe("99:59");
+    expect(formatElapsed(MAX_ELAPSED_MS + 60_000)).toBe("99:59");
   });
 
   it("never renders a negative time", () => {
@@ -24,12 +28,15 @@ describe("formatElapsed", () => {
   });
 });
 
-describe("announcement", () => {
-  it("reads a time a screen reader can speak", async () => {
-    const { announceElapsed } = await import("./format.ts");
+describe("announceElapsed", () => {
+  it("reads a time a screen reader can speak", () => {
     expect(announceElapsed(0)).toBe("0 seconds");
     expect(announceElapsed(1000)).toBe("1 second");
     expect(announceElapsed(65_000)).toBe("1 minute 5 seconds");
-    expect(announceElapsed(60 * 60_000)).toBe("1 hour");
+    expect(announceElapsed(120_000)).toBe("2 minutes");
+  });
+
+  it("is capped like the display", () => {
+    expect(announceElapsed(MAX_ELAPSED_MS + 60_000)).toBe("99 minutes 59 seconds");
   });
 });
