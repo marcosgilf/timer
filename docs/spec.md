@@ -22,6 +22,40 @@ Assets that are not on `main`, and must not be merged:
 
 ---
 
+## 0. Plan revision — MVP first, no named modes
+
+**This section supersedes parts of what follows.** The decisions below were made as a single v1;
+building it proved the batch too big, so delivery is re-cut into shippable capabilities. Nothing here
+invalidates the *reasoning* in §1–§9 — the engine, Clock, cue and persistence models stand — but the
+product shape and the order changed.
+
+### What changed
+
+1. **Named Modes are gone.** No Crono/Countdown/Tabata/EMOM/AMRAP/Pomodoro buttons and no `Mode`
+   type. The app offers three capabilities — count up, count down, repeat with rounds — and *the
+   user's configuration* is what makes a Tabata a Tabata. See "Modes are not a concept" in
+   [CONTEXT.md](../CONTEXT.md). §1's `Mode` union, its per-Mode defaults table and every per-Mode rule
+   are therefore historical: read them as the shape of the *configuration space*, not as features.
+2. **Delivery is capability-first**, each usable end to end before the next starts:
+   Chrono → PWA → count down with its configuration screen → rounds.
+3. **Styling is [Pico CSS](https://picocss.com/), classless.** Semantic HTML carries the design;
+   custom CSS is the exception, justified per component (the digits). The variant-3 layout in §4 is
+   still the target *look*, expressed through semantic elements rather than the prototype's markup.
+4. **WCAG 2.2 AA is a requirement of every slice**, not a later pass — contrast, keyboard, visible and
+   unobscured focus, 24×24px minimum targets, colour never the only signal, and no per-second
+   live-region announcements. See [architecture.md](./architecture.md).
+5. **Configuration reuses the timer display** with `+`/`−` controls for minutes and seconds. Free-text
+   entry is dropped — one input mechanism, not two.
+6. `prototype/timer-ui` and `feat/14-countdown` are both **prototypes**: primary sources to learn
+   from, not code to merge.
+
+### Deferred until a shipped capability needs it
+
+Cues and sound, settings, persistence, Wake Lock, skip/back transport, and configuring the prepare
+countdown. Each stays specified below and returns as its own slice.
+
+---
+
 ## 1. Domain model
 
 Decided by [Interval sequence model — one engine for six modes](../issues/1-interval-sequence-model.md).

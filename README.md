@@ -8,19 +8,18 @@ audible cues. Installable, works fully offline, keeps accurate time when the scr
 > Status: **specified, not yet built.** The design is settled in [`docs/spec.md`](./docs/spec.md);
 > implementation has not started.
 
-## Modes
+## What it does
 
-| Mode | What it does |
+Three capabilities, not a menu of modes:
+
+| Capability | What it does |
 |---|---|
-| Crono | counts up, unbounded — starts the moment you tap it |
-| Countdown | counts down from a set time |
-| Tabata | work / rest × rounds (20s / 10s × 8 by default) |
-| EMOM | a repeating window (60s × 10 by default); E2MOM and E90 by changing the window |
-| AMRAP | a capped countdown to work against |
-| Pomodoro | focus / break × 4 plus a long break |
+| Count up | An unbounded chrono — start, pause, reset |
+| Count down | From a duration you set on the timer itself |
+| Repeat | Work, optional rest, a number of rounds |
 
-All six are one engine: a Mode is default configuration over a single interval model, not its own
-code path.
+Tabata, EMOM and Pomodoro are **configurations you build**, not features the app ships: 20s / 10s × 8
+is a Tabata whether or not anything is labelled "Tabata".
 
 ## Design notes
 
@@ -29,6 +28,7 @@ code path.
 - **Offline-first** — precached service worker, no backend, no accounts, no analytics.
 - **Progressive enhancement** — audio session, Wake Lock and vibration are feature-detected and no-ops
   where absent. The app is fully correct without any of them.
+- **Semantic and accessible** — [Pico CSS](https://picocss.com/) classless, WCAG 2.2 AA in every slice.
 - **No framework** — plain Astro, TypeScript, CSS and DOM APIs. No React unless something proves it
   mandatory.
 

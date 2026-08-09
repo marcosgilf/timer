@@ -1,10 +1,10 @@
 ---
 id: 18
 title: Settings screen
-labels: [build:slice]
+labels: [build:superseded]
 blocked_by: [16, 17]
 assignee:
-state: open
+state: closed
 ---
 
 ## What to build
@@ -33,3 +33,13 @@ Settles the `Prefs` defaults Open question in [docs/spec.md](../docs/spec.md) §
 
 - 16 — Cues you can hear
 - 17 — It remembers
+
+
+## Superseded
+
+Retired by the MVP-first re-plan (see `docs/spec.md` §0). This ticket assumed named Modes on a Home
+screen; the product now offers capabilities — count up, count down, repeat — and the user's own
+configuration is what makes a Tabata or a Pomodoro. Work is re-cut into tickets 23–26.
+
+Kept unclosed-in-spirit, not deleted: its acceptance criteria are still the best description of the
+behaviour, and the tickets that replace it borrow from them.
