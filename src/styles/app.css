@@ -1,0 +1,72 @@
+/*
+ * Everything Pico cannot express. Today that is one thing: digits big enough to read across a room.
+ */
+
+main {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1.5rem;
+  min-height: 100dvh;
+  /* Respect notches; never let a wide child scroll the page sideways. */
+  padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
+  overflow-x: hidden;
+  text-align: center;
+}
+
+/*
+ * "00:00" is roughly 2.7em wide in tabular figures, so the viewport factor must stay under 100/2.7
+ * to fit. Past an hour the string grows to "10:03:07" (~4.8em) and needs a smaller factor — same
+ * reason, different arithmetic.
+ */
+time {
+  display: block;
+  max-width: 100%;
+  font-size: clamp(3.5rem, 24vw, 12rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--pico-color);
+}
+
+time[data-hours] {
+  font-size: clamp(2rem, 13vw, 7rem);
+}
+
+/* Controls sit side by side and stay comfortably above the 24x24px minimum target size. */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  width: min(100%, 26rem);
+}
+
+.controls button {
+  flex: 1 1 8rem;
+  min-height: 3.5rem;
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+/* Announcements for assistive tech only — the visible digits are not a live region. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
