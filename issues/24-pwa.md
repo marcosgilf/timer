@@ -38,7 +38,9 @@ Shipped on `feat/24-pwa`. The existing Chrono is now installable and offline-cap
 - Manifest: `name`/`short_name` = **Timer**, `display: standalone`, `start_url`/`scope` = `/`,
   background/theme colour `#0b0b0c`.
 - Icons generated from a tiny Python script, no image dependency: neon `00:00` on black at 192px,
-  512px and `apple-touch-icon` 180px.
+  512px, `apple-touch-icon` 180px and `favicon.png` 32px.
+- The same icon family is used for the favicon; the Astro starter `favicon.svg`/`.ico` are removed.
+- Icon spacing was widened so the digits and colon do not touch when masked or shrunk by launchers.
 - Manual links emitted in the layout (`manifest.webmanifest`, `apple-touch-icon`) because Astro PWA
   did not inject them.
 - Service worker registered with `registerType: 'prompt'`; update prompt is a native `<dialog>` with

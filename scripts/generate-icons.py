@@ -31,22 +31,25 @@ def png(path: Path, size: int) -> None:
                 i = (y * size + x) * 4
                 image[i : i + 4] = bytes(RED)
 
-    scale = size / 512
+    # More air than the in-app display: launcher icons get clipped, masked and shown tiny.
+    # Positive gaps keep the colon from touching the digits.
+    scale = size / 580
     chars = "00:00"
-    cell_w = 88 * scale
-    cell_h = 150 * scale
-    gap = -8 * scale
-    total_w = cell_w * 4 + (22 * scale) + gap * 4
+    cell_w = 100 * scale
+    cell_h = 180 * scale
+    colon_w = 45 * scale
+    gap = 14 * scale
+    total_w = cell_w * 4 + colon_w + gap * 4
     x = (size - total_w) / 2
     y = (size - cell_h) / 2
 
     for ch in chars:
         if ch == ":":
             dot = int(18 * scale)
-            cx = int(x + 11 * scale)
-            rect(cx, int(y + 50 * scale), cx + dot, int(y + 50 * scale) + dot)
-            rect(cx, int(y + 95 * scale), cx + dot, int(y + 95 * scale) + dot)
-            x += 22 * scale + gap
+            cx = int(x + (colon_w - dot) / 2)
+            rect(cx, int(y + 54 * scale), cx + dot, int(y + 54 * scale) + dot)
+            rect(cx, int(y + 108 * scale), cx + dot, int(y + 108 * scale) + dot)
+            x += colon_w + gap
             continue
         for name in DIGITS[ch]:
             x1, y1, x2, y2 = SEGMENTS[name]
@@ -71,5 +74,10 @@ def png(path: Path, size: int) -> None:
     )
 
 
-for name, size in [("icon-192.png", 192), ("icon-512.png", 512), ("apple-touch-icon.png", 180)]:
+for name, size in [
+    ("favicon.png", 32),
+    ("icon-192.png", 192),
+    ("icon-512.png", 512),
+    ("apple-touch-icon.png", 180),
+]:
     png(Path("public") / name, size)
