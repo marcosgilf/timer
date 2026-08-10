@@ -20,19 +20,24 @@
   --pico-primary-inverse: #fff;
 }
 
-main {
+/* `body > main` matches Pico's own selector, which sets a 510-1450px container width. */
+body > main {
   display: grid;
   align-content: center;
   justify-items: center;
   gap: 0.5rem;
   min-height: 100dvh;
+  /* Pico's classless build makes `main` a fixed-width container (700px at this breakpoint), which
+     capped the digits and wrapped them after the colon. The clock wants the whole screen. */
+  width: 100%;
+  max-width: none;
   /* Respect notches; never let a wide child scroll the page sideways. */
-  padding-inline: max(0.5rem, env(safe-area-inset-left)) max(0.5rem, env(safe-area-inset-right));
+  padding: 1rem max(0.5rem, env(safe-area-inset-left)) 1rem max(0.5rem, env(safe-area-inset-right));
   overflow-x: hidden;
   text-align: center;
 }
 
-main > h1 {
+body > main > h1 {
   margin: 0;
   font-size: 1rem;
   font-weight: 400;
@@ -52,10 +57,13 @@ time {
   max-width: 100%;
   /*
    * "00:00" measures ~2.73em in this face's tabular figures, and `main` reserves 0.5rem of padding
-   * on each side, so the viewport factor must stay under (100% - padding) / 2.73 ≈ 34vw. 32vw leaves
-   * room for a font stack that measures slightly wider.
+   * on each side, so the viewport factor must stay under (100% - padding) / 2.73 ≈ 34vw. The height
+   * term keeps the digits inside a short landscape window; there is no absolute cap, so the clock
+   * grows with the screen.
    */
-  font-size: min(32vw, 38vh, 20rem);
+  font-size: min(32vw, 40vh);
+  /* Minutes, colon and seconds are separate inline boxes, each of which is a wrap opportunity. */
+  white-space: nowrap;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -69,12 +77,12 @@ time {
 
 /*
  * The colon sits on the baseline, so its dots centre on the x-height while lining figures centre far
- * higher. Lifting it by ~0.1em puts the two optical centres on the same line. Tightening the space
- * around it keeps the group from drifting wider than the measured 2.73em.
+ * higher. Lifting it by ~0.1em puts the two optical centres on the same line, and a little breathing
+ * room on each side stops it crowding the digits.
  */
 .separator {
   display: inline-block;
-  margin-inline: -0.06em;
+  margin-inline: 0.05em;
   transform: translateY(-0.09em);
 }
 
