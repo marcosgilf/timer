@@ -3,8 +3,8 @@ id: 24
 title: Installable and offline
 labels: [build:slice]
 blocked_by: [23]
-assignee:
-state: open
+assignee: marcosgilf
+state: closed
 ---
 
 ## What to build
@@ -29,3 +29,26 @@ an explicit devDependency, and nothing is injected into the HTML for you.
 
 Out of this slice on purpose: Wake Lock, audio session, iOS install-guidance copy, and any offline
 storage of user data — there is no user data yet.
+
+## Resolution
+
+Shipped on `feat/24-pwa`. The existing Chrono is now installable and offline-capable.
+
+- Added `@vite-pwa/astro` and explicit `workbox-window` (required under pnpm, per research).
+- Manifest: `name`/`short_name` = **Timer**, `display: standalone`, `start_url`/`scope` = `/`,
+  background/theme colour `#0b0b0c`.
+- Icons generated from a tiny Python script, no image dependency: neon `00:00` on black at 192px,
+  512px and `apple-touch-icon` 180px.
+- Manual links emitted in the layout (`manifest.webmanifest`, `apple-touch-icon`) because Astro PWA
+  did not inject them.
+- Service worker registered with `registerType: 'prompt'`; update prompt is a native `<dialog>` with
+  **Later** and **Reload**. No auto-reload.
+
+Verified locally from `astro preview`:
+- `manifest.webmanifest` serves as `application/manifest+json`.
+- `sw.js` serves and controls the page after one reload.
+- The Workbox precache contains `/`, the built CSS/JS, `manifest.webmanifest`, favicon and all icons.
+- `pnpm check`, `pnpm test` and `pnpm build` pass.
+
+Still needs real-device verification after preview deploy: installability on Android, add-to-home-screen
+on iOS, and load → offline → reload.
