@@ -1,11 +1,120 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import AppLayout from "../layouts/AppLayout.astro";
+import { formatElapsed } from "../domain/format.ts";
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<AppLayout title="Timer">
+  <main>
+    <h1>Timer</h1>
+
+    <!-- <time> is the element for a duration; datetime carries the machine-readable value. The parts
+         are separate elements so the colon can be optically centred against lining figures. -->
+    <time datetime="PT0S" data-display>
+      <span data-minutes>00</span><span class="separator" aria-hidden="true">:</span><span data-seconds>00</span>
+    </time>
+
+    <div class="controls">
+      <button type="button" data-action="primary">Start</button>
+      <button type="button" data-action="reset">Reset</button>
+    </div>
+
+    <!--
+      The digits are deliberately NOT a live region: announcing every second makes a screen reader
+      unusable. State changes are announced here instead, with the time spoken as words.
+    -->
+    <p class="visually-hidden" role="status" data-announcer></p>
+  </main>
+</AppLayout>
+
+<script>
+  import { elapsedMs, isRunning, pause, reset, resume, start, stopped } from "../domain/clock.ts";
+  import type { Clock } from "../domain/clock.ts";
+  import { announceElapsed, formatElapsed, MAX_ELAPSED_MS } from "../domain/format.ts";
+
+  const display = document.querySelector<HTMLTimeElement>("[data-display]")!;
+  const minutes = document.querySelector<HTMLElement>("[data-minutes]")!;
+  const seconds = document.querySelector<HTMLElement>("[data-seconds]")!;
+  const primary = document.querySelector<HTMLButtonElement>('[data-action="primary"]')!;
+  const resetButton = document.querySelector<HTMLButtonElement>('[data-action="reset"]')!;
+  const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
+
+  let clock: Clock = stopped;
+  let frame = 0;
+  let spoken = "";
+
+  const render = () => {
+    const ms = elapsedMs(clock, Date.now());
+    const [mm, ss] = formatElapsed(ms).split(":");
+    minutes.textContent = mm;
+    seconds.textContent = ss;
+    display.dateTime = `PT${Math.floor(ms / 1000)}S`;
+
+    // The digits are separate elements and the colon is hidden, so the readable name is words.
+    // Rewritten only when the spoken value changes, not once per frame.
+    const words = announceElapsed(ms);
+    if (words !== spoken) {
+      spoken = words;
+      display.setAttribute("aria-label", words);
+    }
+    return ms;
+  };
+
+  /** One frame loop, always cancelled before another starts. */
+  const tick = () => {
+    // The display stops at 99:59, so running past it would be a lie. Pause there instead.
+    if (render() >= MAX_ELAPSED_MS) {
+      clock = pause(clock, Date.now());
+      announce(`Finished at ${announceElapsed(MAX_ELAPSED_MS)}`);
+      paint();
+      return;
+    }
+    frame = requestAnimationFrame(tick);
+  };
+
+  const stopTicking = () => {
+    cancelAnimationFrame(frame);
+    frame = 0;
+  };
+
+  const announce = (message: string) => {
+    announcer.textContent = message;
+  };
+
+  const paint = () => {
+    const running = isRunning(clock);
+    primary.textContent = running ? "Pause" : clock.startedAt === null ? "Start" : "Resume";
+    render();
+  };
+
+  primary.addEventListener("click", () => {
+    if (isRunning(clock)) {
+      clock = pause(clock, Date.now());
+      stopTicking();
+      announce(`Paused at ${announceElapsed(elapsedMs(clock, Date.now()))}`);
+    } else {
+      clock = clock.startedAt === null ? start(clock, Date.now()) : resume(clock, Date.now());
+      announce(clock.pausedTotalMs === 0 ? "Started" : "Resumed");
+      stopTicking();
+      tick();
+    }
+    paint();
+  });
+
+  resetButton.addEventListener("click", () => {
+    // A no-op at 00:00 rather than a disabled control: disabled buttons leave the tab order, and a
+    // control that appears and disappears moves the other one under the user's thumb.
+    if (clock.startedAt === null) return;
+    clock = reset(clock);
+    stopTicking();
+    announce("Reset");
+    paint();
+  });
+
+  // rAF is throttled or paused in a hidden tab; the time is derived from the wall clock, so a single
+  // repaint on return is enough to be correct again.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && isRunning(clock)) render();
+  });
+
+  paint();
+</script>

@@ -1,0 +1,135 @@
+/*
+ * Everything Pico cannot express: a gym-clock look — near-black panel, neon red digits — and digits
+ * big enough to read across a room.
+ */
+
+:root {
+  /* Not pure black: a hair of lift stops OLED smearing as the digits change. */
+  --pico-background-color: #0b0b0c;
+  --digit-colour: #ff2b2b;
+  --digit-glow: rgb(255 40 40 / 45%);
+
+  /* Pico's accent follows the digits, so buttons and focus rings belong to the same clock. */
+  --pico-primary: var(--digit-colour);
+  --pico-primary-hover: #ff5a5a;
+  --pico-primary-focus: var(--digit-glow);
+  --pico-primary-background: #b81d1d;
+  --pico-primary-hover-background: #d42525;
+  --pico-primary-border: var(--pico-primary-background);
+  --pico-primary-hover-border: var(--pico-primary-hover-background);
+  --pico-primary-inverse: #fff;
+}
+
+/* `body > main` matches Pico's own selector, which sets a 510-1450px container width. */
+body > main {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0.5rem;
+  min-height: 100dvh;
+  /* Pico's classless build makes `main` a fixed-width container (700px at this breakpoint), which
+     capped the digits and wrapped them after the colon. The clock wants the whole screen. */
+  width: 100%;
+  max-width: none;
+  /* Respect notches; never let a wide child scroll the page sideways. */
+  padding: 1rem max(0.5rem, env(safe-area-inset-left)) 1rem max(0.5rem, env(safe-area-inset-right));
+  overflow-x: hidden;
+  text-align: center;
+}
+
+body > main > h1 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--pico-muted-color);
+}
+
+/*
+ * The digits are the product, so they take as much width as the viewport allows. "00:00" is roughly
+ * 2.7em wide in tabular figures and the display is capped at 99:59, so the character count never
+ * grows and the factor below can sit close to the 100/2.7 ≈ 37 limit.
+ */
+time {
+  display: block;
+  margin: 0;
+  max-width: 100%;
+  /*
+   * "00:00" measures ~2.73em in this face's tabular figures, and `main` reserves 0.5rem of padding
+   * on each side, so the viewport factor must stay under (100% - padding) / 2.73 ≈ 34vw. The height
+   * term keeps the digits inside a short landscape window; there is no absolute cap, so the clock
+   * grows with the screen.
+   */
+  font-size: min(32vw, 40vh);
+  /* Minutes, colon and seconds are separate inline boxes, each of which is a wrap opportunity. */
+  white-space: nowrap;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--digit-colour);
+  /* Decoration only — the digits stay legible with the glow stripped out. */
+  text-shadow:
+    0 0 0.06em var(--digit-glow),
+    0 0 0.22em var(--digit-glow);
+}
+
+/*
+ * The colon sits on the baseline, so its dots centre on the x-height while lining figures centre far
+ * higher. Lifting it by ~0.1em puts the two optical centres on the same line, and a little breathing
+ * room on each side stops it crowding the digits.
+ */
+.separator {
+  display: inline-block;
+  margin-inline: 0.05em;
+  transform: translateY(-0.09em);
+}
+
+/* Deliberately modest: present, reachable, and not competing with the digits. */
+.controls {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  width: min(100%, 22rem);
+  margin-top: 1rem;
+}
+
+.controls button {
+  flex: 1;
+  min-height: 3rem;
+  margin: 0;
+  padding-block: 0.5rem;
+  font-size: 1rem;
+}
+
+/*
+ * Reset is the quieter of the two. Pico's classless build ships no `.secondary`, so the hierarchy is
+ * expressed here — outlined rather than filled, still full contrast text on the dark panel.
+ */
+.controls button[data-action="reset"] {
+  background: transparent;
+  border-color: var(--pico-muted-border-color);
+  color: var(--pico-color);
+}
+
+/* Announcements for assistive tech only — the visible digits are not a live region. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
