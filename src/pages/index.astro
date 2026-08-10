@@ -40,13 +40,21 @@ import AppLayout from "../layouts/AppLayout.astro";
   let clock: Clock = stopped;
   let frame = 0;
   let spoken = "";
+  let title = "";
 
   const render = () => {
     const ms = elapsedMs(clock, Date.now());
-    const [mm, ss] = formatElapsed(ms).split(":");
+    const visible = formatElapsed(ms);
+    const [mm, ss] = visible.split(":");
     minutes.textContent = mm;
     seconds.textContent = ss;
     display.dateTime = `PT${Math.floor(ms / 1000)}S`;
+
+    const nextTitle = `${visible} · Timer`;
+    if (nextTitle !== title) {
+      title = nextTitle;
+      document.title = title;
+    }
 
     // The digits are separate elements and the colon is hidden, so the readable name is words.
     // Rewritten only when the spoken value changes, not once per frame.
