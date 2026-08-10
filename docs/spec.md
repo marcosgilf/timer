@@ -593,8 +593,9 @@ Genuinely undecided. An implementer should raise these rather than assume.
   the "new version ready" prompt appears in the screen shell of §4, or how it behaves mid-Routine.
 - **Install guidance copy for iOS** — decided that it must be static copy (no
   `beforeinstallprompt`), but not what it says or which screen hosts it.
-- **App name, copy, iconography, favicon/manifest icon set, `theme_color`** — listed as unspecified
-  on the map; the manifest cannot be written without them.
+- ~~**App name, iconography, favicon/manifest icon set, `theme_color`**~~ — resolved in
+  [ticket 24](../issues/24-pwa.md): app name `Timer`, `short_name` `Timer`, theme/background
+  `#0b0b0c`, icons are generated `00:00` neon-red-on-black PNGs at 192/512 plus `apple-touch-icon`.
 - **Source-file layout** (`src/lib/…` module names for the engine, cues, clock, storage) — no ticket
   decided it. The prototype keeps everything in one `.astro` file, which does not survive the split.
 - **Exact `boundaries(routine)` signature** — named as a unit-test target by
