@@ -69,14 +69,14 @@ Two branches are kept as primary sources and are deliberately not merged:
 
 ## Deployment
 
-Static build deployed by GitHub Actions to Netlify on push to `main`, served at
-[timer.marcosgilf.com](https://timer.marcosgilf.com).
+Pull requests deploy preview builds to Netlify. Production deploys only when a GitHub Release is
+published, served at [timer.marcosgilf.com](https://timer.marcosgilf.com).
 
 ## Releases
 
 Release Please opens Release PRs from Conventional Commits. Merging a Release PR bumps
-`package.json`, updates `CHANGELOG.md`, creates a `vX.Y.Z` Git tag and a GitHub Release. The app shows
-that version in the bottom-right corner.
+`package.json`, updates `CHANGELOG.md`, creates a `vX.Y.Z` Git tag and a GitHub Release. Publishing
+that release triggers the production deploy. The app shows that version in the bottom-right corner.
 
 Use commit prefixes intentionally:
 
@@ -85,8 +85,8 @@ Use commit prefixes intentionally:
 - `feat!:` or `BREAKING CHANGE:` → major version
 - `docs:` / `chore:` → no release unless paired with releasable changes
 
-Set repository secret `RELEASE_PLEASE_TOKEN` if you want Release PRs to trigger CI like normal PRs;
-otherwise GitHub suppresses workflows created by `GITHUB_TOKEN`.
+`RELEASE_PLEASE_TOKEN` is managed by `infra/github` and is required; Release Please PRs and releases
+must trigger CI/deploy like human-created ones.
 
 ## Contributing
 

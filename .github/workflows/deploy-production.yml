@@ -1,0 +1,22 @@
+name: Deploy production
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  qa:
+    uses: ./.github/workflows/qa.yml
+
+  deploy-prod:
+    needs: qa
+    uses: ./.github/workflows/deploy-prod.yml
+    secrets: inherit

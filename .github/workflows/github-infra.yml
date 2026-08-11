@@ -1,0 +1,102 @@
+name: GitHub infra
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - infra/github/**
+      - scripts/import-github-infra.sh
+      - .github/workflows/github-infra.yml
+  push:
+    branches:
+      - main
+    paths:
+      - infra/github/**
+      - scripts/import-github-infra.sh
+      - .github/workflows/github-infra.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-infra-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GH_TOKEN: ${{ secrets.TERRAFORM_GITHUB_TOKEN }}
+  TF_VAR_github_token: ${{ secrets.TERRAFORM_GITHUB_TOKEN }}
+  TF_VAR_netlify_auth_token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+  TF_VAR_netlify_site_id: ${{ vars.NETLIFY_SITE_ID }}
+  TF_VAR_release_please_token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Check Terraform GitHub token
+        shell: bash
+        run: |
+          if [ -z "${TERRAFORM_GITHUB_TOKEN:-}" ]; then
+            echo "TERRAFORM_GITHUB_TOKEN repository secret is required." >&2
+            echo "It cannot be created by Terraform because Terraform needs it to manage GitHub." >&2
+            exit 1
+          fi
+        env:
+          TERRAFORM_GITHUB_TOKEN: ${{ secrets.TERRAFORM_GITHUB_TOKEN }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.8
+
+      - name: Init
+        run: terraform -chdir=infra/github init -backend=false -input=false
+
+      - name: Import existing GitHub resources
+        run: ./scripts/import-github-infra.sh
+
+      - name: Format check
+        run: terraform -chdir=infra/github fmt -check -recursive
+
+      - name: Validate
+        run: terraform -chdir=infra/github validate
+
+      - name: Plan
+        run: terraform -chdir=infra/github plan -input=false -no-color
+
+  apply:
+    needs: plan
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Check Terraform GitHub token
+        shell: bash
+        run: |
+          if [ -z "${TERRAFORM_GITHUB_TOKEN:-}" ]; then
+            echo "TERRAFORM_GITHUB_TOKEN repository secret is required." >&2
+            echo "It cannot be created by Terraform because Terraform needs it to manage GitHub." >&2
+            exit 1
+          fi
+        env:
+          TERRAFORM_GITHUB_TOKEN: ${{ secrets.TERRAFORM_GITHUB_TOKEN }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.8
+
+      - name: Init
+        run: terraform -chdir=infra/github init -backend=false -input=false
+
+      - name: Import existing GitHub resources
+        run: ./scripts/import-github-infra.sh
+
+      - name: Apply
+        run: terraform -chdir=infra/github apply -input=false -auto-approve

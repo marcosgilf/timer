@@ -1,0 +1,8 @@
+github_token = "github_pat_..."
+
+# Existing Netlify deploy credentials
+netlify_auth_token = "nfp_..." # typo guard: rename to netlify_auth_token in your local tfvars
+netlify_site_id     = "00000000-0000-0000-0000-000000000000"
+
+# Fine-grained PAT for Release Please. Needs Contents R/W + Pull requests R/W.
+release_please_token = "github_pat_..."
