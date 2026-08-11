@@ -37,6 +37,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Check Terraform GitHub token
+        shell: bash
+        run: |
+          if [ -z "${TERRAFORM_GITHUB_TOKEN:-}" ]; then
+            echo "TERRAFORM_GITHUB_TOKEN repository secret is required." >&2
+            echo "It cannot be created by Terraform because Terraform needs it to manage GitHub." >&2
+            exit 1
+          fi
+        env:
+          TERRAFORM_GITHUB_TOKEN: ${{ secrets.TERRAFORM_GITHUB_TOKEN }}
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
         with:
@@ -61,6 +72,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      - name: Check Terraform GitHub token
+        shell: bash
+        run: |
+          if [ -z "${TERRAFORM_GITHUB_TOKEN:-}" ]; then
+            echo "TERRAFORM_GITHUB_TOKEN repository secret is required." >&2
+            echo "It cannot be created by Terraform because Terraform needs it to manage GitHub." >&2
+            exit 1
+          fi
+        env:
+          TERRAFORM_GITHUB_TOKEN: ${{ secrets.TERRAFORM_GITHUB_TOKEN }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
