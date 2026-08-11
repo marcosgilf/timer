@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage --passWithNoTests",
     "check:dependencies": "ncu --target patch --errorLevel 2",
+    "check:audit": "pnpm audit --audit-level high",
     "update:dependencies": "ncu -u && pnpm install",
     "lint": "oxlint . && oxfmt --check .",
     "format": "oxlint --fix . && oxfmt --write .",
