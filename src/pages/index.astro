@@ -6,10 +6,33 @@ import AppLayout from "../layouts/AppLayout.astro";
   <main>
     <h1>Timer</h1>
 
-    <!-- <time> is the element for a duration; datetime carries the machine-readable value. The parts
-         are separate elements so the colon can be optically centred against lining figures. -->
-    <time datetime="PT0S" data-display>
-      <span data-minutes>00</span><span class="separator" aria-hidden="true">:</span><span data-seconds>00</span>
+    <fieldset class="direction-choice" data-direction-choice>
+      <legend>Count direction</legend>
+      <label><input type="radio" name="direction" value="up" checked /> Count up</label>
+      <label><input type="radio" name="direction" value="down" /> Count down</label>
+    </fieldset>
+
+    <fieldset class="duration-settings" data-countdown-settings hidden>
+      <legend>Countdown duration</legend>
+      <time datetime="PT5M" data-display aria-live="off" aria-label="5 minutes">
+        <span class="duration-column">
+          <button type="button" data-step="minutes" data-amount="1" aria-label="Increase countdown minutes">+</button>
+          <span data-minutes aria-hidden="true">05</span>
+          <span class="unit" aria-hidden="true">min</span>
+          <button type="button" data-step="minutes" data-amount="-1" aria-label="Decrease countdown minutes">−</button>
+        </span>
+        <span class="separator" aria-hidden="true">:</span>
+        <span class="duration-column">
+          <button type="button" data-step="seconds" data-amount="1" aria-label="Increase countdown seconds">+</button>
+          <span data-seconds aria-hidden="true">00</span>
+          <span class="unit" aria-hidden="true">sec</span>
+          <button type="button" data-step="seconds" data-amount="-1" aria-label="Decrease countdown seconds">−</button>
+        </span>
+      </time>
+    </fieldset>
+
+    <time class="chrono-display" datetime="PT0S" data-chrono-display aria-live="off" aria-label="0 seconds" hidden>
+      <span data-chrono-minutes aria-hidden="true">00</span><span class="separator" aria-hidden="true">:</span><span data-chrono-seconds aria-hidden="true">00</span>
     </time>
 
     <div class="controls">
@@ -17,10 +40,12 @@ import AppLayout from "../layouts/AppLayout.astro";
       <button type="button" data-action="reset">Reset</button>
     </div>
 
-    <!--
-      The digits are deliberately NOT a live region: announcing every second makes a screen reader
-      unusable. State changes are announced here instead, with the time spoken as words.
-    -->
+    <p class="finished" data-finished hidden>
+      <span data-finished-label>Finished.</span>
+      <span data-configured-result hidden>Configured duration: <time data-configured-duration>05:00</time>.</span>
+    </p>
+
+    <!-- The digits are not live: per-second announcements make a screen reader unusable. -->
     <p class="visually-hidden" role="status" data-announcer></p>
   </main>
 </AppLayout>
@@ -28,54 +53,73 @@ import AppLayout from "../layouts/AppLayout.astro";
 <script>
   import { elapsedMs, isRunning, pause, reset, resume, start, stopped } from "../domain/clock.ts";
   import type { Clock } from "../domain/clock.ts";
-  import { announceElapsed, formatElapsed, MAX_ELAPSED_MS } from "../domain/format.ts";
+  import { phaseAt } from "../domain/phase.ts";
+  import { announceElapsed, formatElapsed, formatRemaining } from "../domain/format.ts";
+  import {
+    chrono,
+    countdown,
+    DEFAULT_DURATION_MS,
+    stepDuration,
+    type CountDirection,
+    type DurationUnit,
+    type Routine,
+  } from "../domain/routine.ts";
 
+  const directionChoice = document.querySelector<HTMLFieldSetElement>("[data-direction-choice]")!;
+  const countdownSettings = document.querySelector<HTMLFieldSetElement>("[data-countdown-settings]")!;
   const display = document.querySelector<HTMLTimeElement>("[data-display]")!;
+  const chronoDisplay = document.querySelector<HTMLTimeElement>("[data-chrono-display]")!;
   const minutes = document.querySelector<HTMLElement>("[data-minutes]")!;
   const seconds = document.querySelector<HTMLElement>("[data-seconds]")!;
+  const chronoMinutes = document.querySelector<HTMLElement>("[data-chrono-minutes]")!;
+  const chronoSeconds = document.querySelector<HTMLElement>("[data-chrono-seconds]")!;
   const primary = document.querySelector<HTMLButtonElement>('[data-action="primary"]')!;
   const resetButton = document.querySelector<HTMLButtonElement>('[data-action="reset"]')!;
+  const finished = document.querySelector<HTMLElement>("[data-finished]")!;
+  const finishedLabel = document.querySelector<HTMLElement>("[data-finished-label]")!;
+  const configuredResult = document.querySelector<HTMLElement>("[data-configured-result]")!;
+  const configuredDuration = document.querySelector<HTMLTimeElement>("[data-configured-duration]")!;
   const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
+  const directionInputs = document.querySelectorAll<HTMLInputElement>('input[name="direction"]');
+  const stepButtons = document.querySelectorAll<HTMLButtonElement>("[data-step]");
 
+  let direction: CountDirection = "up";
+  let durationMs = DEFAULT_DURATION_MS;
   let clock: Clock = stopped;
+  let isFinished = false;
   let frame = 0;
-  let spoken = "";
-  let title = "";
 
-  const render = () => {
-    const ms = elapsedMs(clock, Date.now());
-    const visible = formatElapsed(ms);
-    const [mm, ss] = visible.split(":");
-    minutes.textContent = mm;
-    seconds.textContent = ss;
-    display.dateTime = `PT${Math.floor(ms / 1000)}S`;
+  const routine = (): Routine => (direction === "down" ? countdown(durationMs) : chrono());
 
-    const nextTitle = `${visible} · Timer`;
-    if (nextTitle !== title) {
-      title = nextTitle;
-      document.title = title;
-    }
-
-    // The digits are separate elements and the colon is hidden, so the readable name is words.
-    // Rewritten only when the spoken value changes, not once per frame.
-    const words = announceElapsed(ms);
-    if (words !== spoken) {
-      spoken = words;
-      display.setAttribute("aria-label", words);
-    }
-    return ms;
+  const announce = (message: string) => {
+    announcer.textContent = message;
   };
 
-  /** One frame loop, always cancelled before another starts. */
-  const tick = () => {
-    // The display stops at 99:59, so running past it would be a lie. Pause there instead.
-    if (render() >= MAX_ELAPSED_MS) {
-      clock = pause(clock, Date.now());
-      announce(`Finished at ${announceElapsed(MAX_ELAPSED_MS)}`);
-      paint();
-      return;
+  const spokenTime = (ms: number) =>
+    direction === "down" ? announceElapsed(Math.ceil(ms / 1000) * 1000) : announceElapsed(ms);
+
+  const render = () => {
+    const state = phaseAt(elapsedMs(clock, Date.now()), routine());
+    const visible = direction === "down" ? formatRemaining(state.displayMs) : formatElapsed(state.displayMs);
+    const [mm, ss] = visible.split(":");
+
+    if (direction === "down") {
+      minutes.textContent = mm;
+      seconds.textContent = ss;
+      display.dateTime = `PT${state.displayMs / 1000}S`;
+      display.setAttribute("aria-label", spokenTime(state.displayMs));
+    } else {
+      chronoMinutes.textContent = mm;
+      chronoSeconds.textContent = ss;
+      chronoDisplay.dateTime = `PT${state.displayMs / 1000}S`;
+      chronoDisplay.setAttribute("aria-label", spokenTime(state.displayMs));
     }
-    frame = requestAnimationFrame(tick);
+
+    document.title = `${visible} · Timer`;
+    finished.hidden = !isFinished;
+    configuredDuration.textContent = formatElapsed(durationMs);
+    configuredDuration.dateTime = `PT${durationMs / 1000}S`;
+    return state;
   };
 
   const stopTicking = () => {
@@ -83,44 +127,113 @@ import AppLayout from "../layouts/AppLayout.astro";
     frame = 0;
   };
 
-  const announce = (message: string) => {
-    announcer.textContent = message;
+  const paint = () => {
+    const state = render();
+    if (state.status === "done" && !isFinished) finish();
+
+    const active = clock.startedAt !== null;
+    directionChoice.disabled = active;
+    countdownSettings.disabled = active;
+    countdownSettings.hidden = direction !== "down";
+    display.hidden = direction !== "down";
+    chronoDisplay.hidden = direction !== "up";
+    configuredResult.hidden = direction !== "down";
+    primary.textContent = isFinished ? "Start again" : isRunning(clock) ? "Pause" : active ? "Resume" : "Start";
   };
 
-  const paint = () => {
-    const running = isRunning(clock);
-    primary.textContent = running ? "Pause" : clock.startedAt === null ? "Start" : "Resume";
-    render();
+  const finish = () => {
+    isFinished = true;
+    clock = pause(clock, Date.now());
+    stopTicking();
+    finishedLabel.textContent = direction === "down" ? "Finished." : "Finished at 99:59.";
+    announce(
+      direction === "down"
+        ? `Finished. Configured duration ${announceElapsed(durationMs)}.`
+        : "Finished at 99 minutes 59 seconds.",
+    );
+    paint();
   };
+
+  const tick = () => {
+    if (!isRunning(clock)) return;
+    const state = render();
+    if (state.status === "done") {
+      finish();
+      return;
+    }
+    frame = requestAnimationFrame(tick);
+  };
+
+  const startRunning = () => {
+    isFinished = false;
+    clock = start(reset(), Date.now());
+    stopTicking();
+    announce(direction === "down" ? `Started. ${announceElapsed(durationMs)} configured.` : "Started.");
+    paint();
+    tick();
+  };
+
+  directionInputs.forEach((input) => {
+    input.addEventListener("change", () => {
+      direction = input.value as CountDirection;
+      clock = reset();
+      isFinished = false;
+      stopTicking();
+      announce(direction === "down" ? "Count down selected." : "Count up selected.");
+      paint();
+    });
+  });
+
+  stepButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const unit = button.dataset.step as DurationUnit;
+      const amount = Number(button.dataset.amount);
+      durationMs = stepDuration(durationMs, unit, amount);
+      announce(`Countdown duration ${announceElapsed(durationMs)}.`);
+      paint();
+    });
+  });
 
   primary.addEventListener("click", () => {
-    if (isRunning(clock)) {
-      clock = pause(clock, Date.now());
-      stopTicking();
-      announce(`Paused at ${announceElapsed(elapsedMs(clock, Date.now()))}`);
-    } else {
-      clock = clock.startedAt === null ? start(clock, Date.now()) : resume(clock, Date.now());
-      announce(clock.pausedTotalMs === 0 ? "Started" : "Resumed");
-      stopTicking();
-      tick();
+    if (isFinished) {
+      clock = reset();
+      startRunning();
+      return;
     }
+
+    const now = Date.now();
+    if (isRunning(clock)) {
+      clock = pause(clock, now);
+      stopTicking();
+      announce(`Paused at ${spokenTime(elapsedMs(clock, now))}.`);
+      paint();
+      return;
+    }
+
+    if (clock.startedAt === null) {
+      startRunning();
+      return;
+    }
+
+    clock = resume(clock, now);
+    announce("Resumed.");
     paint();
+    tick();
   });
 
   resetButton.addEventListener("click", () => {
-    // A no-op at 00:00 rather than a disabled control: disabled buttons leave the tab order, and a
-    // control that appears and disappears moves the other one under the user's thumb.
-    if (clock.startedAt === null) return;
     clock = reset();
+    isFinished = false;
     stopTicking();
-    announce("Reset");
+    announce("Reset.");
     paint();
   });
 
-  // rAF is throttled or paused in a hidden tab; the time is derived from the wall clock, so a single
-  // repaint on return is enough to be correct again.
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && isRunning(clock)) render();
+    if (!document.hidden && isRunning(clock)) {
+      stopTicking();
+      tick();
+    }
   });
 
   paint();

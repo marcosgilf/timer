@@ -285,7 +285,8 @@ Work
 [−]  min  sec  [−]
 ```
 
-Digits are timer-sized (3rem/800, `--fg`); boxes match the stepper-column height. **Start alone at
+Digits are timer-sized (3rem/800, `--fg`); boxes match the stepper-column height. Free-text duration
+entry is intentionally absent: the `+`/`−` steppers are the only duration controls. **Start alone at
 the bottom as a sticky CTA.** Fields shown are those the Mode uses (§1). Crono has **no Config
 screen at all** — it starts on tap from Home.
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { announceElapsed, formatElapsed, MAX_ELAPSED_MS } from "./format.ts";
+import { announceElapsed, formatElapsed, formatRemaining, MAX_ELAPSED_MS } from "./format.ts";
 
 describe("formatElapsed", () => {
   it("shows minutes and seconds", () => {
@@ -25,6 +25,15 @@ describe("formatElapsed", () => {
 
   it("never renders a negative time", () => {
     expect(formatElapsed(-5000)).toBe("00:00");
+  });
+});
+
+describe("formatRemaining", () => {
+  it("rounds countdown values up so zero never flashes before completion", () => {
+    expect(formatRemaining(0)).toBe("00:00");
+    expect(formatRemaining(1)).toBe("00:01");
+    expect(formatRemaining(1000)).toBe("00:01");
+    expect(formatRemaining(1001)).toBe("00:02");
   });
 });
 
