@@ -588,9 +588,8 @@ Genuinely undecided. An implementer should raise these rather than assume.
 - **Default values for `Prefs`** — the fields are fixed by
   [ticket 7](../issues/7-persistence-model.md), but only `prepareMs` has a stated default (10s).
   Starting `muted`, `volume`, `ticks` and `vibrate` values are unspecified.
-- **Update-prompt UI** — `registerType: 'prompt'` is decided
-  ([ticket 4](../issues/4-pwa-offline-install-wakelock-research.md)), but no ticket designed where
-  the "new version ready" prompt appears in the screen shell of §4, or how it behaves mid-Routine.
+- ~~**Update-prompt UI**~~ — resolved in [ticket 24](../issues/24-pwa.md): no prompt. The service
+  worker auto-updates and the new build is picked up on page reload, so timing is never interrupted.
 - **Install guidance copy for iOS** — decided that it must be static copy (no
   `beforeinstallprompt`), but not what it says or which screen hosts it.
 - ~~**App name, iconography, favicon/manifest icon set, `theme_color`**~~ — resolved in

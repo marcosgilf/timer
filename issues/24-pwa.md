@@ -43,14 +43,16 @@ Shipped on `feat/24-pwa`. The existing Chrono is now installable and offline-cap
 - Icon spacing was widened so the digits and colon do not touch when masked or shrunk by launchers.
 - Manual links emitted in the layout (`manifest.webmanifest`, `apple-touch-icon`) because Astro PWA
   did not inject them.
-- Service worker registered with `registerType: 'prompt'`; update prompt is a native `<dialog>` with
-  **Later** and **Reload**. No auto-reload.
+- Service worker registered with `registerType: 'autoUpdate'` and no UI. Updates land on the next page
+  load; no modal interrupts the timer.
 
 Verified locally from `astro preview`:
 - `manifest.webmanifest` serves as `application/manifest+json`.
 - `sw.js` serves and controls the page after one reload.
 - The Workbox precache contains `/`, the built CSS/JS, `manifest.webmanifest`, favicon and all icons.
 - `pnpm check`, `pnpm test` and `pnpm build` pass.
+- Build output contains no update-prompt copy (`Update ready` count = 0).
+- App version is rendered in the bottom-right corner from `package.json` (`v0.0.1`).
 
 Still needs real-device verification after preview deploy: installability on Android, add-to-home-screen
 on iOS, and load → offline → reload.

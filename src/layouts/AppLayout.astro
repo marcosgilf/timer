@@ -4,6 +4,7 @@
  * container and nothing else.
  */
 import "@picocss/pico/css/pico.classless.min.css";
+import packageJson from "../../package.json";
 import "../styles/app.css";
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 }
 
 const { title } = Astro.props;
+const version = packageJson.version;
 ---
 
 <!doctype html>
@@ -28,33 +30,12 @@ const { title } = Astro.props;
   </head>
   <body>
     <slot />
-
-    <dialog data-update-prompt aria-labelledby="update-title">
-      <article>
-        <h2 id="update-title">Update ready</h2>
-        <p>A new version is available.</p>
-        <footer>
-          <button type="button" data-update-dismiss>Later</button>
-          <button type="button" data-update-reload>Reload</button>
-        </footer>
-      </article>
-    </dialog>
+    <small class="app-version" aria-label={`Timer version ${version}`}>v{version}</small>
 
     <script>
       import { registerSW } from "virtual:pwa-register";
 
-      const prompt = document.querySelector<HTMLDialogElement>("[data-update-prompt]")!;
-      const reload = document.querySelector<HTMLButtonElement>("[data-update-reload]")!;
-      const dismiss = document.querySelector<HTMLButtonElement>("[data-update-dismiss]")!;
-
-      const updateSW = registerSW({
-        onNeedRefresh() {
-          prompt.showModal();
-        },
-      });
-
-      reload.addEventListener("click", () => updateSW(true));
-      dismiss.addEventListener("click", () => prompt.close());
+      registerSW();
     </script>
   </body>
 </html>
