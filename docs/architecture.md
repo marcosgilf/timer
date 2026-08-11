@@ -41,7 +41,7 @@ Applied here:
 The lean principle applied to the code you are tempted to write *right now*. Build for the behaviour
 in front of you, not the one you can imagine.
 
-- A ticket ships **only what its own acceptance criteria demand**. If Countdown is the slice, Home
+- A slice ships **only what its own acceptance criteria demand**. If Countdown is the slice, Home
   lists Countdown — not six buttons where five do nothing. Placeholders are inventory: they look like
   progress, they need maintaining, and they lie to the user about what works.
 - **No abstraction until the second case exists.** An interface with one implementation, a factory
@@ -50,8 +50,8 @@ in front of you, not the one you can imagine.
 - **No dependency for what a few lines do.** Reach for the platform first: `<dialog>`, form controls,
   CSS, `localStorage`, `AudioContext`. Every dependency is bytes to precache, a supply chain, and an
   upgrade you will owe.
-- **No code for a future requirement.** If it is genuinely coming it will be a ticket; write it then,
-  when the requirement is real and its shape is known.
+- **No code for a future requirement.** If it is genuinely coming, write it when the requirement is
+  real and its shape is known.
 - Deliberate shortcuts that cut a real corner get a `ponytail:` comment naming the ceiling and the
   upgrade path, so the trade-off is visible instead of forgotten.
 
@@ -130,7 +130,6 @@ src/
 ├── pages/        routes, and the screen composition for each
 └── styles/       design tokens and global CSS
 docs/             spec, architecture
-issues/           decision tickets (wayfinder) and build tickets
 ```
 
 **`infra/` is reserved for deployment infrastructure as code** (Terraform, Netlify/DNS config) at the
@@ -166,5 +165,5 @@ Rules that keep the boundaries honest:
 - **No state-management library** — state is three numbers (`Clock`) plus a `Routine`; the domain
   derives the rest.
 - **No component framework** — plain Astro and DOM. React arrives only if a slice proves it
-  mandatory, and that proof goes in a ticket.
+  mandatory, and that proof goes in the spec.
 - **No design system beyond Pico** — classless semantic CSS covers everything except the digits.

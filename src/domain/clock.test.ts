@@ -33,7 +33,7 @@ describe("clock", () => {
   });
 
   it("resets to a stopped zero", () => {
-    const clock = reset(pause(start(stopped, 0), 90_000));
+    const clock = reset();
     expect(elapsedMs(clock, 500_000)).toBe(0);
     expect(isRunning(clock)).toBe(false);
   });

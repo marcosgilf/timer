@@ -58,9 +58,7 @@ registry/advisory state and can block unrelated local work.
 
 ## How this project is planned
 
-Decisions are made one at a time as tickets in [`issues/`](./issues) — a local markdown issue tracker
-using the [wayfinder](https://github.com/mattpocock/skills) method — and folded into
-[`docs/spec.md`](./docs/spec.md), with the code structure in [`docs/architecture.md`](./docs/architecture.md). [`CONTEXT.md`](./CONTEXT.md) is the glossary.
+Decisions live in [`docs/spec.md`](./docs/spec.md), with code structure in [`docs/architecture.md`](./docs/architecture.md). [`CONTEXT.md`](./CONTEXT.md) is the glossary. Future work lives in [GitHub Issues](https://github.com/marcosgilf/timer/issues): [countdown](https://github.com/marcosgilf/timer/issues/10) → [rounds](https://github.com/marcosgilf/timer/issues/11).
 
 Two branches are kept as primary sources and are deliberately not merged:
 

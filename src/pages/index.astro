@@ -111,7 +111,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     // A no-op at 00:00 rather than a disabled control: disabled buttons leave the tab order, and a
     // control that appears and disappears moves the other one under the user's thumb.
     if (clock.startedAt === null) return;
-    clock = reset(clock);
+    clock = reset();
     stopTicking();
     announce("Reset");
     paint();

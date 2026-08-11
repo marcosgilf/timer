@@ -30,4 +30,4 @@ export const resume = (clock: Clock, now: number): Clock =>
     ? clock
     : { ...clock, pausedTotalMs: clock.pausedTotalMs + (now - clock.pausedAt), pausedAt: null };
 
-export const reset = (_clock: Clock): Clock => stopped;
+export const reset = (): Clock => stopped;

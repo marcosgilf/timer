@@ -9,14 +9,99 @@ permissions:
   contents: read
 
 concurrency:
-  group: deploy-production
+  group: deploy
   cancel-in-progress: false
 
 jobs:
   qa:
-    uses: ./.github/workflows/qa.yml
+    name: qa
+    runs-on: ubuntu-latest
+    env:
+      PUBLIC_DEPLOY_CONTEXT: production
+      PUBLIC_PR_NUMBER: ""
+      PUBLIC_COMMIT_SHA: ${{ github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
 
-  deploy-prod:
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Types, lint and format
+        run: pnpm check
+
+      - name: Unit tests
+        shell: bash
+        run: |
+          set -o pipefail
+          NO_COLOR=1 pnpm test:coverage | tee coverage-output.txt
+          {
+            echo "## Coverage"
+            echo
+            echo '```text'
+            awk '
+              /^ % Coverage report/ { printing=1; next }
+              /^=============================== Coverage summary/ { exit }
+              printing { print }
+            ' coverage-output.txt
+            echo '```'
+            echo
+            echo '```text'
+            awk '/^=============================== Coverage summary/ { printing=1 } printing { print }' coverage-output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Dependency patch drift
+        run: pnpm check:dependencies
+
+      - name: Security audit
+        run: pnpm check:audit
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: coverage
+          if-no-files-found: ignore
+
+      - name: Build
+        run: pnpm build
+
+      - name: Upload build
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist
+
+  deploy:
+    name: deploy-prod
     needs: qa
-    uses: ./.github/workflows/deploy-prod.yml
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - name: Deploy to Netlify
+        run: |
+          npx netlify-cli deploy \
+            --dir=dist \
+            --no-build \
+            --prod \
+            --site="$NETLIFY_SITE_ID" \
+            --auth="$NETLIFY_AUTH_TOKEN"
+          echo "Production: https://timer.marcosgilf.com" >> "$GITHUB_STEP_SUMMARY"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ vars.NETLIFY_SITE_ID }}
