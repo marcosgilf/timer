@@ -18,7 +18,7 @@ const prNumber = import.meta.env.PUBLIC_PR_NUMBER;
 const shortSha = import.meta.env.PUBLIC_COMMIT_SHA?.slice(0, 7);
 const deployLabel =
   deployContext === "preview" && prNumber
-    ? `preview · PR #${prNumber}${shortSha ? ` · ${shortSha}` : ""}`
+    ? `PR #${prNumber}${shortSha ? ` · ${shortSha}` : ""}`
     : deployContext === "production"
       ? ""
       : shortSha
