@@ -37,33 +37,37 @@ The Terraform `github_token` (used to apply this module) needs broader repo admi
 
 ## First-time setup
 
-Create local `terraform.tfvars` (gitignored):
+Token creation is the only manual part; GitHub does not provide a safe API for scripts to mint user
+PATs. Use the bootstrap script for everything else:
+
+```sh
+./scripts/setup-github-iac.sh
+```
+
+It opens the PAT settings page, prompts for the four required values, writes local
+`infra/github/terraform.tfvars` with `0600` permissions, runs `terraform init`, imports the existing
+repo and `main` ruleset, then runs `terraform plan`.
+
+Equivalent manual setup:
 
 ```hcl
 github_token = "github_pat_..."
 
-netlify_auth_token  = "nfp_..."
-netlify_site_id     = "00000000-0000-0000-0000-000000000000"
+netlify_auth_token   = "nfp_..."
+netlify_site_id      = "00000000-0000-0000-0000-000000000000"
 release_please_token = "github_pat_..."
 ```
-
-Initialize and import the existing repository and ruleset:
 
 ```sh
 terraform -chdir=infra/github init
 terraform -chdir=infra/github import github_repository.this timer
 terraform -chdir=infra/github import github_repository_ruleset.main timer:20583655
+terraform -chdir=infra/github plan
+terraform -chdir=infra/github apply
 ```
 
 Secrets and variables can be imported too, but it is usually simpler to let Terraform overwrite them
 with the local `terraform.tfvars` values on first apply.
-
-Preview and apply:
-
-```sh
-terraform -chdir=infra/github plan
-terraform -chdir=infra/github apply
-```
 
 ## Day to day
 
