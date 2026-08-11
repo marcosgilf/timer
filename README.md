@@ -68,6 +68,22 @@ Two branches are kept as primary sources and are deliberately not merged:
 Static build deployed by GitHub Actions to Netlify on push to `main`, served at
 [timer.marcosgilf.com](https://timer.marcosgilf.com).
 
+## Releases
+
+Release Please opens Release PRs from Conventional Commits. Merging a Release PR bumps
+`package.json`, updates `CHANGELOG.md`, creates a `vX.Y.Z` Git tag and a GitHub Release. The app shows
+that version in the bottom-right corner.
+
+Use commit prefixes intentionally:
+
+- `feat:` → minor version
+- `fix:` → patch version
+- `feat!:` or `BREAKING CHANGE:` → major version
+- `docs:` / `chore:` → no release unless paired with releasable changes
+
+Set repository secret `RELEASE_PLEASE_TOKEN` if you want Release PRs to trigger CI like normal PRs;
+otherwise GitHub suppresses workflows created by `GITHUB_TOKEN`.
+
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md). Licensed under [MIT](./LICENSE).
