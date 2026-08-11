@@ -32,7 +32,25 @@ jobs:
         run: pnpm check
 
       - name: Unit tests
-        run: pnpm test:coverage
+        shell: bash
+        run: |
+          set -o pipefail
+          NO_COLOR=1 pnpm test:coverage | tee coverage-output.txt
+          {
+            echo "## Coverage"
+            echo
+            echo '```text'
+            awk '
+              /^ % Coverage report/ { printing=1; next }
+              /^=============================== Coverage summary/ { exit }
+              printing { print }
+            ' coverage-output.txt
+            echo '```'
+            echo
+            echo '```text'
+            awk '/^=============================== Coverage summary/ { printing=1 } printing { print }' coverage-output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Dependency patch drift
         run: pnpm check:dependencies
