@@ -49,8 +49,12 @@ pnpm dev          # http://localhost:4321
 | `pnpm format` | oxlint `--fix` + oxfmt `--write` |
 | `pnpm test` | vitest (unit) |
 | `pnpm test:coverage` | vitest with a coverage report (reported, never gated) |
+| `pnpm check:dependencies` | fail when patch updates are available |
+| `pnpm check:audit` | fail on high/critical npm advisories |
 
-Git hooks: `pre-commit` formats and type-checks staged files, `pre-push` runs `pnpm check && pnpm test`.
+Git hooks: `pre-commit` formats and type-checks staged files, `pre-push` runs
+`pnpm check && pnpm test && pnpm check:dependencies`. `pnpm check:audit` runs in CI rather than
+pre-push, because advisories are network-backed and can block unrelated local work.
 
 ## How this project is planned
 

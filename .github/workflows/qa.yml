@@ -34,6 +34,12 @@ jobs:
       - name: Unit tests
         run: pnpm test:coverage
 
+      - name: Dependency patch drift
+        run: pnpm check:dependencies
+
+      - name: Security audit
+        run: pnpm check:audit
+
       - name: Upload coverage
         uses: actions/upload-artifact@v7
         with:
