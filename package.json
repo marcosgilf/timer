@@ -23,6 +23,8 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
     "@vite-pwa/astro": "^1.2.0",
     "@vitest/coverage-v8": "^4.1.10",
     "husky": "^9.1.7",
