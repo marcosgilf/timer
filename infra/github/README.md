@@ -45,8 +45,8 @@ PATs. Use the bootstrap script for everything else:
 ```
 
 It opens the PAT settings page, prompts for the four required values, writes local
-`infra/github/terraform.tfvars` with `0600` permissions, runs `terraform init`, imports the existing
-repo and `main` ruleset, then runs `terraform plan`.
+`infra/github/terraform.tfvars` with `0600` permissions, runs `terraform init`, calls
+`./scripts/import-github-infra.sh`, then runs `terraform plan`. See [scripts/README.md](../../scripts/README.md).
 
 Equivalent manual setup:
 
@@ -71,9 +71,9 @@ with the local `terraform.tfvars` values on first apply.
 
 ## GitHub Actions
 
-`.github/workflows/github-infra.yml` runs on changes to this folder:
+`.github/workflows/github-infra.yml` runs on changes to this folder or the import script:
 
-- Pull requests: import existing resources into ephemeral state, then `terraform plan`
+- Pull requests: `./scripts/import-github-infra.sh`, then `terraform plan`
 - Pushes to `main`: same import, then `terraform apply`
 
 Required repository secret for the workflow itself:

@@ -117,34 +117,7 @@ echo "Wrote $tfvars (0600)"
 
 terraform -chdir="$tf_dir" init
 
-state_has() {
-  terraform -chdir="$tf_dir" state list 2>/dev/null | grep -qx "$1"
-}
-
-if ! state_has github_repository.this; then
-  terraform -chdir="$tf_dir" import github_repository.this "$repo_name"
-else
-  echo "github_repository.this already imported"
-fi
-
-ruleset_id=""
-if command -v gh >/dev/null 2>&1; then
-  ruleset_id="$(gh api "repos/${repo_owner}/${repo_name}/rulesets" --jq '.[] | select(.name == "main" and .target == "branch") | .id' 2>/dev/null | head -1 || true)"
-fi
-
-if [[ -z "$ruleset_id" ]]; then
-  ruleset_id="$(read_plain "main ruleset id (see https://github.com/${repo_owner}/${repo_name}/rules)")"
-fi
-
-if [[ -n "$ruleset_id" ]]; then
-  if ! state_has github_repository_ruleset.main; then
-    terraform -chdir="$tf_dir" import github_repository_ruleset.main "${repo_name}:${ruleset_id}"
-  else
-    echo "github_repository_ruleset.main already imported"
-  fi
-else
-  echo "No main ruleset id provided; Terraform will try to create it on apply." >&2
-fi
+GITHUB_REPOSITORY="${repo_owner}/${repo_name}" TF_DIR="$tf_dir" ./scripts/import-github-infra.sh
 
 terraform -chdir="$tf_dir" plan
 

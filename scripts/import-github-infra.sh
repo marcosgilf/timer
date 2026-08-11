@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Import existing GitHub resources into Terraform state if they are missing.
+# Used by both local bootstrap and GitHub Actions because this repo intentionally uses local/ephemeral
+# Terraform state for GitHub settings.
 set -euo pipefail
 
 tf_dir="${TF_DIR:-infra/github}"
