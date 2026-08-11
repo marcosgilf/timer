@@ -31,9 +31,3 @@ jobs:
       contents: read
       pull-requests: write
     secrets: inherit
-
-  deploy-prod:
-    needs: qa
-    if: github.event_name == 'push'
-    uses: ./.github/workflows/deploy-prod.yml
-    secrets: inherit
