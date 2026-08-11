@@ -40,6 +40,12 @@ pull request rather than quietly diverging.
 
 ## Pull requests
 
+Use Conventional Commits for PR titles / squash commit messages so Release Please can version the app:
+
+- `feat:` for user-visible functionality
+- `fix:` for bug fixes
+- `docs:` and `chore:` for non-release changes
+
 - One concern per pull request; keep the diff as small as the change allows.
 - Explain *why*, not just what — the what is in the diff.
 - Update `docs/spec.md` when behaviour changes, and `CONTEXT.md` when vocabulary does.
