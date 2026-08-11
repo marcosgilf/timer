@@ -9,6 +9,9 @@ permissions:
 jobs:
   qa:
     runs-on: ubuntu-latest
+    env:
+      PUBLIC_DEPLOY_CONTEXT: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
+      PUBLIC_PR_NUMBER: ${{ github.event.pull_request.number || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
