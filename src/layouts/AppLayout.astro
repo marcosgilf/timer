@@ -15,8 +15,15 @@ const { title } = Astro.props;
 const version = packageJson.version;
 const deployContext = import.meta.env.PUBLIC_DEPLOY_CONTEXT ?? (import.meta.env.DEV ? "local" : "production");
 const prNumber = import.meta.env.PUBLIC_PR_NUMBER;
+const shortSha = import.meta.env.PUBLIC_COMMIT_SHA?.slice(0, 7);
 const deployLabel =
-  deployContext === "preview" && prNumber ? `preview · PR #${prNumber}` : deployContext === "production" ? "" : deployContext;
+  deployContext === "preview" && prNumber
+    ? `preview · PR #${prNumber}${shortSha ? ` · ${shortSha}` : ""}`
+    : deployContext === "production"
+      ? ""
+      : shortSha
+        ? `${deployContext} · ${shortSha}`
+        : deployContext;
 ---
 
 <!doctype html>
