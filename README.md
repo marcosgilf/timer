@@ -52,9 +52,9 @@ pnpm dev          # http://localhost:4321
 | `pnpm check:dependencies` | fail when patch updates are available |
 | `pnpm check:audit` | fail on high/critical npm advisories |
 
-Git hooks: `pre-commit` formats and type-checks staged files, `pre-push` runs
-`pnpm check && pnpm test && pnpm check:dependencies`. `pnpm check:audit` runs in CI rather than
-pre-push, because advisories are network-backed and can block unrelated local work.
+Git hooks: `pre-commit` formats and type-checks staged files, `pre-push` runs `pnpm check && pnpm test`.
+Dependency drift and audit checks run in CI rather than pre-push, because they depend on external
+registry/advisory state and can block unrelated local work.
 
 ## How this project is planned
 
