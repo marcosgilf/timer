@@ -44,8 +44,8 @@ PATs. Use the bootstrap script for everything else:
 ./scripts/setup-github-iac.sh
 ```
 
-It opens the PAT settings page, prompts for the four required values, writes local
-`infra/github/terraform.tfvars` with `0600` permissions, runs `terraform init`, calls
+It reuses valid values from env vars or `infra/github/terraform.tfvars`, prompts only for missing or
+expired values, writes local `terraform.tfvars` with `0600` permissions, runs `terraform init`, calls
 `./scripts/import-github-infra.sh`, then runs `terraform plan`. See [scripts/README.md](../../scripts/README.md).
 
 Equivalent manual setup:

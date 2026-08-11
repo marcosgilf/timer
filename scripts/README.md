@@ -14,21 +14,21 @@ Use it once per machine or when credentials rotate:
 
 What it does:
 
-1. Prints the required GitHub PAT permissions and opens the PAT page.
-2. Prompts for:
-   - `github_token` — Terraform PAT
-   - `release_please_token` — Release Please PAT
-   - `netlify_auth_token`
-   - `netlify_site_id`
-3. Writes `infra/github/terraform.tfvars` with `0600` permissions.
-4. Runs `terraform init`.
-5. Calls `import-github-infra.sh`.
-6. Runs `terraform plan`.
+1. Reads existing values from env vars or `infra/github/terraform.tfvars`.
+2. Validates them:
+   - GitHub tokens via GitHub API (repo access; Terraform token also checks ruleset access)
+   - Netlify token via Netlify API
+   - Netlify site id via Netlify API
+3. Prompts only for values that are missing, expired or invalid.
+4. Writes `infra/github/terraform.tfvars` with `0600` permissions.
+5. Runs `terraform init`.
+6. Calls `import-github-infra.sh`.
+7. Runs `terraform plan`.
 
 Why it does **not** create PATs: GitHub does not expose a safe API for scripts to mint user PATs.
 Credential creation stays manual; the script automates everything after that.
 
-Environment overrides, useful for password managers or CI experiments:
+Environment overrides, useful for password managers or CI experiments. If valid, these skip prompts:
 
 ```sh
 GITHUB_TOKEN_FOR_TERRAFORM=... \
