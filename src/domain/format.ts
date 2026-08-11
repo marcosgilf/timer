@@ -1,8 +1,10 @@
-/** The display never grows an hours field, so the timer tops out here. */
-export const MAX_ELAPSED_MS = 99 * 60_000 + 59_000;
+import { MAX_DURATION_MS } from "./routine.ts";
 
-const parts = (ms: number) => {
-  const total = Math.floor(Math.min(MAX_ELAPSED_MS, Math.max(0, ms)) / 1000);
+/** The display never grows an hours field, so the timer tops out here. */
+export const MAX_ELAPSED_MS = MAX_DURATION_MS;
+
+const parts = (ms: number, round: (value: number) => number = Math.floor) => {
+  const total = round(Math.min(MAX_ELAPSED_MS, Math.max(0, ms)) / 1000);
   return { minutes: Math.floor(total / 60), seconds: total % 60 };
 };
 
@@ -11,6 +13,12 @@ const pad = (value: number) => String(value).padStart(2, "0");
 /** Counting up, so a part-second is not yet a second. */
 export function formatElapsed(ms: number): string {
   const { minutes, seconds } = parts(ms);
+  return `${pad(minutes)}:${pad(seconds)}`;
+}
+
+/** Counting down, so the display keeps showing one until the exact zero boundary. */
+export function formatRemaining(ms: number): string {
+  const { minutes, seconds } = parts(ms, Math.ceil);
   return `${pad(minutes)}:${pad(seconds)}`;
 }
 
