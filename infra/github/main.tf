@@ -56,12 +56,12 @@ resource "github_repository_ruleset" "main" {
       required_check {
         # GitHub Actions app id. Pinning avoids Terraform replacing provider-read checks with
         # integration_id = 0 on every plan.
-        context        = "qa / qa"
+        context        = "qa"
         integration_id = 15368
       }
 
       required_check {
-        context        = "deploy-dev / deploy-dev"
+        context        = "deploy-dev"
         integration_id = 15368
       }
     }
