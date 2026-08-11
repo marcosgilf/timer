@@ -59,6 +59,9 @@ jobs:
       - name: Import existing GitHub resources
         run: ./scripts/import-github-infra.sh
 
+      - name: Format check
+        run: terraform -chdir=infra/github fmt -check -recursive
+
       - name: Validate
         run: terraform -chdir=infra/github validate
 
