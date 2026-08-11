@@ -33,10 +33,7 @@ Both run automatically — `pre-commit` formats and type-checks staged files, `p
 
 ## How this project is planned
 
-Decisions live in [`issues/`](./issues), a local markdown issue tracker, and are folded into
-[`docs/spec.md`](./docs/spec.md). [`CONTEXT.md`](./CONTEXT.md) is the glossary — use its vocabulary in
-code and in pull requests. If a change contradicts a decision recorded in `issues/`, say so in the
-pull request rather than quietly diverging.
+Decisions live in [`docs/spec.md`](./docs/spec.md); open work and discussion live in [GitHub Issues](https://github.com/marcosgilf/timer/issues). [`CONTEXT.md`](./CONTEXT.md) is the glossary — use its vocabulary in code and in pull requests. If a change contradicts the spec, say so in the pull request rather than quietly diverging.
 
 ## Pull requests
 

@@ -1,12 +1,10 @@
 # Routine timer PWA — implementation spec
 
-Handoff document for the map [Routine timer PWA — spec](../issues/0-workout-timer-pwa-spec.md).
-Everything an implementer needs to build v1 is here; the tickets are the audit trail, not required
-reading. Terms are used exactly as defined in [CONTEXT.md](../CONTEXT.md) — "interval" and "timer"
+Everything an implementer needs to build v1 is here. Terms are used exactly as defined in [CONTEXT.md](../CONTEXT.md) — "interval" and "timer"
 are banned as domain nouns.
 
 **The standing rule** (map Notes, restated by
-[iOS background audio](../issues/10-ios-background-audio.md)): the app must be **fully correct with
+iOS background audio): the app must be **fully correct with
 zero platform extras**. Every capability — audio session, Wake Lock, vibration, install, offline —
 is feature-detected and a no-op when absent. No polyfills, no UA sniffing, no keepalive hacks.
 
@@ -14,11 +12,11 @@ Assets that are not on `main`, and must not be merged:
 
 - **Prototype**: branch `prototype/timer-ui`, `src/pages/prototype.astro`, run with `pnpm prototype`
   — the visual source of truth for the Running screen
-  ([Screen layout and config UI](../issues/6-screen-layout-and-config-ui.md)).
+  (Screen layout and config UI).
 - **Research**: branch `research/pwa-platform`, `research/pwa-platform.md` (commit `3144d27`),
   read with `git show research/pwa-platform:research/pwa-platform.md` — citations and version
   numbers behind the platform facts
-  ([PWA offline, install and Wake Lock](../issues/4-pwa-offline-install-wakelock-research.md)).
+  (PWA offline, install and Wake Lock).
 
 ---
 
@@ -58,7 +56,7 @@ countdown. Each stays specified below and returns as its own slice.
 
 ## 1. Domain model
 
-Decided by [Interval sequence model — one engine for six modes](../issues/1-interval-sequence-model.md).
+Decided by Interval sequence model — one engine for six modes.
 
 **One model, six presets.** A Mode is default configuration plus a label — never its own code path.
 Only Crono is structurally different (unbounded).
@@ -105,14 +103,14 @@ Rules:
 **Clamp silently. Never block Start, never show error text.** Phase duration `0:01`–`99:59`,
 rounds `1`–99, seconds roll into minutes (`0:75` → `1:15`). Clamping lives in the pure layer, not
 in the DOM, so it is unit-tested
-([Testing strategy](../issues/8-testing-strategy.md)).
+(Testing strategy).
 
 ---
 
 ## 2. The engine — `phaseAt` and Clock arithmetic
 
-Decided by [Interval sequence model](../issues/1-interval-sequence-model.md) and
-[Clock accuracy and background behaviour](../issues/2-clock-accuracy-and-background-behaviour.md).
+Decided by Interval sequence model and
+Clock accuracy and background behaviour.
 
 ### Derive, don't expand
 
@@ -140,7 +138,7 @@ const elapsed = (c: Clock, now: number) => (c.pausedAt ?? now) - c.startedAt - c
 
 - **Time source is `Date.now()` only.** `performance.now()` does not advance while the device is
   suspended on either platform — confirmed as fact, not guess, by
-  [PWA research](../issues/4-pwa-offline-install-wakelock-research.md) (WebKit `MonotonicTime` /
+  PWA research (WebKit `MonotonicTime` /
   `mach_absolute_time`, Chromium `CLOCK_MONOTONIC`). Sleeping mid-routine is normal on a gym floor.
   Accepted trade-off: an NTP or manual clock step mid-Routine corrupts elapsed — rare, recoverable
   by pausing.
@@ -161,7 +159,7 @@ const elapsed = (c: Clock, now: number) => (c.pausedAt ?? now) - c.startedAt - c
 On `visibilitychange` → visible: recompute from the Clock and **jump** to the correct Phase. Missed
 cues are dropped, never replayed — stale beeps are noise. If the Routine completed while away, land
 on the Done screen (its end cue may fire). With phase-length cue scheduling
-([iOS background audio](../issues/10-ios-background-audio.md)) the drop rule now only covers a real
+(iOS background audio) the drop rule now only covers a real
 device suspend, where nothing helps.
 
 ### Transport controls
@@ -180,8 +178,8 @@ because nothing accumulates.
 
 ## 3. Cue model and scheduling
 
-Decided by [Audio and haptic cue model](../issues/3-audio-and-haptic-cue-model.md), with the
-scheduling horizon revised by [iOS background audio](../issues/10-ios-background-audio.md).
+Decided by Audio and haptic cue model, with the
+scheduling horizon revised by iOS background audio.
 
 **Cues are data, sinks are dumb.** `cuesFor(routine)` is a pure function returning `{ at, kind }[]`;
 sinks (tone, vibration, later speech) render them. The pure part is unit-tested; sinks are trivial
@@ -212,7 +210,7 @@ timers. Cues are booked on `AudioContext.currentTime`, which is immune to thrott
 clock (`Date.now()`) and the cue clock (`AudioContext.currentTime`) are two views of one timeline,
 correlated once at start.
 
-Horizon is **one Phase, not one second** ([iOS background audio](../issues/10-ios-background-audio.md)):
+Horizon is **one Phase, not one second** (iOS background audio):
 a ~1s horizon does not survive a 5-minute pomodoro break with the screen off. At each Phase start,
 schedule every cue of that Phase. A Phase is the natural unit — its cues are fully known when it
 begins, and it bounds how much must be cancelled. Scheduling the whole Routine up front would mean
@@ -247,8 +245,8 @@ matrix.** Persisted as preferences (§5); surfaced on the Settings screen (§4).
 
 ## 4. UI — screens, states, layout
 
-Decided by [Screen layout and config UI](../issues/6-screen-layout-and-config-ui.md) (prototype,
-branch `prototype/timer-ui`) and [Where cue and app settings live in the UI](../issues/11-settings-ui-home.md).
+Decided by Screen layout and config UI (prototype,
+branch `prototype/timer-ui`) and Where cue and app settings live in the UI.
 
 ### Chosen layout: variant 3, "bar"
 
@@ -260,7 +258,7 @@ only.
 
 ### Shell
 
-Every screen **including Home** ([ticket 11](../issues/11-settings-ui-home.md)) uses the same top
+Every screen **including Home** uses the same top
 nav: left slot / centred title / right slot. Content starts at the **top** of the page, never
 vertically centred.
 
@@ -303,8 +301,8 @@ Mode-dependent behaviour:
   so every Mode ends the same way.
 - During `prepare`, `⏭` skips the countdown in every Mode — it never finishes.
 - Single-Phase Routines hide the controls they cannot use.
-- **No mute control here** ([ticket 11](../issues/11-settings-ui-home.md)) — the phone's volume
-  buttons work face-down on the floor, need no aiming and cost no pixels.
+- **No mute control here** — the phone's volume buttons work face-down on the floor, need no aiming
+  and cost no pixels.
 - Conditional one-line notes: "tap to enable sound" if the `AudioContext` is still suspended (§3),
   and "Screen may sleep — keep it awake for sound." where Wake Lock is absent (§6).
 
@@ -328,16 +326,14 @@ No theme override — `prefers-color-scheme` only, and nothing is stored for it.
 ### No React, anywhere
 
 The whole prototype is one `.astro` file: plain DOM, CSS custom properties, `rAF`, native
-`<input inputmode="numeric">`. Nothing in the UI justifies an island
-([ticket 6](../issues/6-screen-layout-and-config-ui.md)), and nothing in the PWA layer does either —
-registration, update prompt, Wake Lock, audio session and haptics are all plain DOM APIs
-([ticket 4](../issues/4-pwa-offline-install-wakelock-research.md)).
+`<input inputmode="numeric">`. Nothing in the UI justifies an island, and nothing in the PWA layer
+does either — registration, update prompt, Wake Lock, audio session and haptics are all plain DOM APIs.
 
 ---
 
 ## 5. Persistence
 
-Decided by [Persistence model in localStorage](../issues/7-persistence-model.md).
+Decided by Persistence model in localStorage.
 
 ### Two keys, different lifetimes
 
@@ -393,8 +389,8 @@ start because storage is odd is worse than one that forgot your settings.
 
 ## 6. PWA — offline, install, Wake Lock
 
-Decided by [PWA offline, install and Wake Lock — platform research](../issues/4-pwa-offline-install-wakelock-research.md)
-and [iOS background audio](../issues/10-ios-background-audio.md).
+Decided by PWA offline, install and Wake Lock — platform research
+and iOS background audio.
 
 ### The progressive-enhancement layer table
 
@@ -467,17 +463,16 @@ that, and the display recomputes from `Date.now()` on resume. **No special case 
 
 ## 7. Toolchain
 
-Decided by [Toolchain baseline ported from b2b-wrk-esi](../issues/5-toolchain-baseline.md)
+Decided by Toolchain baseline ported from b2b-wrk-esi
 (commit `938e0e9`, already on `main`).
 
 - **Astro 7 + TypeScript, static output.** `output: 'static'` is the Astro 7 default and is
   deliberately not written in the config; it becomes a real decision only if an adapter appears.
 - **pnpm**, Node `>=22.12.0`. `pnpm-workspace.yaml` kept (pnpm uses it for `allowBuilds`).
   `.npmrc` sets `min-release-age=7`.
-- **React is not installed** and no ticket has justified it (§4). Adding it later is
-  `astro add react`.
+- **React is not installed** and nothing has justified it (§4). Adding it later is `astro add react`.
 - **oxlint** (`.oxlintrc.json`, + `env.browser`, `ignorePatterns: [dist, .astro]`) and **oxfmt**
-  (`.oxfmtrc.json`, `**/*.md` ignored so tickets are never rewritten). oxlint **does** lint `.astro`
+  (`.oxfmtrc.json`, `**/*.md` ignored). oxlint **does** lint `.astro`
   (frontmatter and `<script>`, verified on 1.77.0); **oxfmt does not** — accepted, editor formatting
   plus `astro check` cover it. Add `prettier` + `prettier-plugin-astro` only if template drift
   becomes annoying.
@@ -495,7 +490,7 @@ Decided by [Toolchain baseline ported from b2b-wrk-esi](../issues/5-toolchain-ba
 
 ## 8. Testing strategy
 
-Decided by [Testing strategy — vitest unit plus Playwright e2e](../issues/8-testing-strategy.md).
+Decided by Testing strategy — vitest unit plus Playwright e2e.
 
 Everything decided is pure, so the strategy is small on purpose: **no fake timers, no mocks, no
 jsdom.** The clock is a parameter, so time is just an argument.
@@ -544,35 +539,27 @@ with **no threshold and no gate** — a percentage target invites tests written 
 
 ## 9. Non-goals
 
-From the map's [Out of scope](../issues/0-workout-timer-pwa-spec.md) plus explicit rulings inside
-tickets. None of these is a gap to fill; each was decided against.
+Out of scope. None of these is a gap to fill; each was decided against.
 
 - **Accounts, multi-device sync, any server component** — single local user.
 - **Online-only behaviour** beyond service-worker update on reconnect.
 - **Routine history, stats, charts.**
 - **i18n.**
-- **Sets** — a second nesting level above Round. Ruled out of v1 as model complexity
-  ([ticket 1](../issues/1-interval-sequence-model.md)); revisit only if actually missed in the gym.
-- **Named / saved presets** — v1 configures fresh each time. `lastUsed`
-  ([ticket 7](../issues/7-persistence-model.md)) is already the right shape:
+- **Sets** — a second nesting level above Round. Ruled out of v1 as model complexity; revisit only
+  if actually missed in the gym.
+- **Named / saved presets** — v1 configures fresh each time. `lastUsed` is already the right shape:
   `Record<string, Routine & { name }>` under a different key, no migration.
 - **AMRAP round tapping** — only worth it with history to write rounds to, and history is out of scope.
-- **Tenths of a second on Crono** — dropped for readability across a room
-  ([ticket 2](../issues/2-clock-accuracy-and-background-behaviour.md)).
-- **Per-Routine prepare countdown** — global preference for now
-  ([ticket 11](../issues/11-settings-ui-home.md)); making it per-Routine is a model change, not a UI
-  tweak.
-- **Per-cue toggle matrix** — a settings screen nobody opens
-  ([ticket 3](../issues/3-audio-and-haptic-cue-model.md)).
+- **Tenths of a second on Crono** — dropped for readability across a room.
+- **Per-Routine prepare countdown** — global preference for now; making it per-Routine is a model
+  change, not a UI tweak.
+- **Per-cue toggle matrix** — a settings screen nobody opens.
 - **Recorded audio samples** — synthesised tones only, unless they prove inaudible in a noisy gym.
 - **Voice cues** — a future speech **sink** behind the existing cue model; no engine change needed.
-- **Manual theme toggle** — `prefers-color-scheme` only
-  ([ticket 6](../issues/6-screen-layout-and-config-ui.md)).
+- **Manual theme toggle** — `prefers-color-scheme` only.
 - **React islands** — none justified (§4).
-- **Whole-Routine remaining time** — meaningless for Crono, unrequested
-  ([ticket 1](../issues/1-interval-sequence-model.md)).
-- **Polyfills, UA sniffing, keepalive hacks** — the standing rule
-  ([ticket 10](../issues/10-ios-background-audio.md)).
+- **Whole-Routine remaining time** — meaningless for Crono, unrequested.
+- **Polyfills, UA sniffing, keepalive hacks** — the standing rule.
 - **Hosting/deploy beyond local** — no backend, no analytics.
 
 ---
@@ -581,22 +568,19 @@ tickets. None of these is a gap to fill; each was decided against.
 
 Genuinely undecided. An implementer should raise these rather than assume.
 
-- ~~**CI**~~ — resolved after the spec was written: [CI workflow](../issues/12-ci-workflow.md) and
-  [Netlify site and timer.marcosgilf.com](../issues/13-netlify-site-and-domain.md) are closed. CI is a
+- ~~**CI**~~ — resolved after the spec was written: CI workflow and
+  Netlify site and timer.marcosgilf.com are closed. CI is a
   signal, not a gate; deploys are gated on a green `qa` job; e2e stays out of CI until tests exist; the
   app is live at `timer.marcosgilf.com`.
-- **Default values for `Prefs`** — the fields are fixed by
-  [ticket 7](../issues/7-persistence-model.md), but only `prepareMs` has a stated default (10s).
-  Starting `muted`, `volume`, `ticks` and `vibrate` values are unspecified.
-- ~~**Update-prompt UI**~~ — resolved in [ticket 24](../issues/24-pwa.md): no prompt. The service
-  worker auto-updates and the new build is picked up on page reload, so timing is never interrupted.
+- **Default values for `Prefs`** — only `prepareMs` has a stated default (10s). Starting `muted`,
+  `volume`, `ticks` and `vibrate` values are unspecified.
+- ~~**Update-prompt UI**~~ — resolved: no prompt. The service worker auto-updates and the new build
+  is picked up on page reload, so timing is never interrupted.
 - **Install guidance copy for iOS** — decided that it must be static copy (no
   `beforeinstallprompt`), but not what it says or which screen hosts it.
-- ~~**App name, iconography, favicon/manifest icon set, `theme_color`**~~ — resolved in
-  [ticket 24](../issues/24-pwa.md): app name `Timer`, `short_name` `Timer`, theme/background
-  `#0b0b0c`, icons are generated `00:00` neon-red-on-black PNGs at 192/512 plus `apple-touch-icon`.
-- **Source-file layout** (`src/lib/…` module names for the engine, cues, clock, storage) — no ticket
-  decided it. The prototype keeps everything in one `.astro` file, which does not survive the split.
-- **Exact `boundaries(routine)` signature** — named as a unit-test target by
-  [ticket 8](../issues/8-testing-strategy.md) but never specified in
-  [ticket 1](../issues/1-interval-sequence-model.md).
+- ~~**App name, iconography, favicon/manifest icon set, `theme_color`**~~ — resolved: app name
+  `Timer`, `short_name` `Timer`, theme/background `#0b0b0c`, icons are `00:00`
+  neon-red-on-black PNGs at 192/512 plus `apple-touch-icon`.
+- **Source-file layout** (`src/lib/…` module names for the engine, cues, clock, storage) — undecided.
+  The prototype keeps everything in one `.astro` file, which does not survive the split.
+- **Exact `boundaries(routine)` signature** — named as a unit-test target but never specified.
