@@ -134,6 +134,17 @@ time {
   color: var(--pico-color);
 }
 
+.app-version {
+  position: fixed;
+  right: max(0.5rem, env(safe-area-inset-right));
+  bottom: max(0.5rem, env(safe-area-inset-bottom));
+  margin: 0;
+  color: var(--pico-muted-color);
+  font-size: 0.75rem;
+  opacity: 0.75;
+  user-select: none;
+}
+
 /* Announcements for assistive tech only — the visible digits are not a live region. */
 .visually-hidden {
   position: absolute;

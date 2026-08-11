@@ -6,7 +6,7 @@ import { defineConfig } from "astro/config";
 export default defineConfig({
   integrations: [
     AstroPWA({
-      registerType: "prompt",
+      registerType: "autoUpdate",
       manifest: {
         name: "Timer",
         short_name: "Timer",
