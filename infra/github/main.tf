@@ -7,7 +7,7 @@ resource "github_repository" "this" {
   allow_squash_merge          = true
   allow_rebase_merge          = true
   allow_merge_commit          = false
-  squash_merge_commit_title   = "PR_TITLE"
+  squash_merge_commit_title   = "COMMIT_OR_PR_TITLE"
   squash_merge_commit_message = "COMMIT_MESSAGES"
 
   # Cleanup
@@ -47,18 +47,22 @@ resource "github_repository_ruleset" "main" {
       require_code_owner_review         = false
       require_last_push_approval        = false
       required_approving_review_count   = 0
-      required_review_thread_resolution = false
+      required_review_thread_resolution = true
     }
 
     required_status_checks {
       strict_required_status_checks_policy = true
 
       required_check {
-        context = "qa / qa"
+        # GitHub Actions app id. Pinning avoids Terraform replacing provider-read checks with
+        # integration_id = 0 on every plan.
+        context        = "qa / qa"
+        integration_id = 15368
       }
 
       required_check {
-        context = "deploy-dev / deploy-dev"
+        context        = "deploy-dev / deploy-dev"
+        integration_id = 15368
       }
     }
   }
