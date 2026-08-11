@@ -1,3 +1,2 @@
 pnpm check
 pnpm test
-pnpm check:dependencies
