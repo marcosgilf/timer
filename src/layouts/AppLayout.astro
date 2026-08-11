@@ -13,6 +13,10 @@ interface Props {
 
 const { title } = Astro.props;
 const version = packageJson.version;
+const deployContext = import.meta.env.PUBLIC_DEPLOY_CONTEXT ?? (import.meta.env.DEV ? "local" : "production");
+const prNumber = import.meta.env.PUBLIC_PR_NUMBER;
+const deployLabel =
+  deployContext === "preview" && prNumber ? `preview · PR #${prNumber}` : deployContext === "production" ? "" : deployContext;
 ---
 
 <!doctype html>
@@ -30,6 +34,7 @@ const version = packageJson.version;
   </head>
   <body>
     <slot />
+    {deployLabel && <small class="deploy-clue" aria-label={`Deployment context ${deployLabel}`}>{deployLabel}</small>}
     <small class="app-version" aria-label={`Timer version ${version}`}>v{version}</small>
 
     <script>

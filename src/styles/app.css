@@ -134,15 +134,25 @@ time {
   color: var(--pico-color);
 }
 
-.app-version {
+.app-version,
+.deploy-clue {
   position: fixed;
-  right: max(0.5rem, env(safe-area-inset-right));
   bottom: max(0.5rem, env(safe-area-inset-bottom));
   margin: 0;
   color: var(--pico-muted-color);
   font-size: 0.75rem;
   opacity: 0.75;
   user-select: none;
+}
+
+.app-version {
+  right: max(0.5rem, env(safe-area-inset-right));
+}
+
+.deploy-clue {
+  left: max(0.5rem, env(safe-area-inset-left));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 /* Announcements for assistive tech only — the visible digits are not a live region. */
