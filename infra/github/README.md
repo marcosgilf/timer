@@ -46,7 +46,9 @@ PATs. Use the bootstrap script for everything else:
 
 It reuses valid values from env vars or `infra/github/terraform.tfvars`, prompts only for missing or
 expired values, writes local `terraform.tfvars` with `0600` permissions, runs `terraform init`, calls
-`./scripts/import-github-infra.sh`, then runs `terraform plan`. See [scripts/README.md](../../scripts/README.md).
+`./scripts/import-github-infra.sh`, then runs `terraform plan`. Existing GitHub Actions secrets are
+write-only, so their values cannot be reused unless they are already in env vars or local tfvars. See
+[scripts/README.md](../../scripts/README.md).
 
 Equivalent manual setup:
 
@@ -66,8 +68,8 @@ terraform -chdir=infra/github plan
 terraform -chdir=infra/github apply
 ```
 
-Secrets and variables can be imported too, but it is usually simpler to let Terraform overwrite them
-with the local `terraform.tfvars` values on first apply.
+Secrets and variables are imported when they already exist. Missing ones are skipped during import and
+created on apply from `terraform.tfvars` / `TF_VAR_*` values.
 
 ## GitHub Actions
 

@@ -20,6 +20,10 @@ What it does:
    - Netlify token via Netlify API
    - Netlify site id via Netlify API
 3. Prompts only for values that are missing, expired or invalid.
+
+Important: GitHub Actions secrets are write-only. The script can check whether a secret named
+`NETLIFY_AUTH_TOKEN` exists, but it cannot read the secret value back from GitHub. If the value is not
+in env vars or local `terraform.tfvars`, the script must ask for it again.
 4. Writes `infra/github/terraform.tfvars` with `0600` permissions.
 5. Runs `terraform init`.
 6. Calls `import-github-infra.sh`.
@@ -47,7 +51,7 @@ Used by GitHub Actions before plan/apply, and by `setup-github-iac.sh` locally.
 ./scripts/import-github-infra.sh
 ```
 
-Imports if missing:
+Imports if present, skips if missing so Terraform can create on apply:
 
 - `github_repository.this`
 - `github_repository_ruleset.main`
