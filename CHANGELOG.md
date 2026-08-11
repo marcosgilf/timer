@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.0](https://github.com/marcosgilf/timer/compare/v0.1.0...v0.2.0) (2026-08-11)
+
+
+### Features
+
+* **pwa:** make Timer installable and offline ([7a90f53](https://github.com/marcosgilf/timer/commit/7a90f53862f3cd4932ef9e229417780ba697daa1))
+
+
+### Bug Fixes
+
+* **chrono:** mirror count in title, enlarge landscape digits, shrink controls ([13da6d2](https://github.com/marcosgilf/timer/commit/13da6d29e0970698ef4ad6c92b51d609bd18d523))
+* **infra:** update required workflow checks ([677dac0](https://github.com/marcosgilf/timer/commit/677dac00d70b889952555d39e169c41a295fa613))
+* **pwa:** add air to app icon and reuse it as favicon ([2681bd7](https://github.com/marcosgilf/timer/commit/2681bd7fd69d897bf53d78d35f615e3773a856a0))
+* **pwa:** remove update modal, auto-update on reload, show app version ([ec57c30](https://github.com/marcosgilf/timer/commit/ec57c30164f7a749e264daa6de9eff34bffa5641))
+
 ## [0.1.0](https://github.com/marcosgilf/timer/compare/v0.0.1...v0.1.0) (2026-08-11)
 
 
