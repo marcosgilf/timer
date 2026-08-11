@@ -69,6 +69,21 @@ terraform -chdir=infra/github apply
 Secrets and variables can be imported too, but it is usually simpler to let Terraform overwrite them
 with the local `terraform.tfvars` values on first apply.
 
+## GitHub Actions
+
+`.github/workflows/github-infra.yml` runs on changes to this folder:
+
+- Pull requests: import existing resources into ephemeral state, then `terraform plan`
+- Pushes to `main`: same import, then `terraform apply`
+
+Required repository secret for the workflow itself:
+
+- `TERRAFORM_GITHUB_TOKEN` — fine-grained PAT with Administration R/W, Secrets R/W, Variables R/W,
+  Metadata Read, scoped to `marcosgilf/timer`
+
+The workflow imports current resources on every run instead of relying on remote state. That keeps this
+small personal repo simple; if the repo grows, move state to Terraform Cloud or another remote backend.
+
 ## Day to day
 
 ```sh
