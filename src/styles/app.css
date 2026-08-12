@@ -188,6 +188,12 @@ body > main {
   background: var(--pico-muted-border-color);
   color: var(--pico-color);
 }
+
+.stepper-group button:focus-visible {
+  outline: 3px solid var(--pico-primary);
+  outline-offset: 2px;
+}
+
 .configuration-form {
   display: grid;
   align-content: start;
