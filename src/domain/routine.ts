@@ -32,4 +32,4 @@ export const durationFromParts = (minutes: number, seconds: number): number => {
 
 /** Step one labelled unit and carry between seconds and minutes naturally. */
 export const stepDuration = (durationMs: number, unit: DurationUnit, amount: number): number =>
-  clampDuration(durationMs + (unit === "minutes" ? 60_000 : 5_000) * amount);
+  clampDuration(durationMs + (unit === "minutes" ? 60_000 : 1_000) * amount);

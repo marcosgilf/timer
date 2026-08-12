@@ -14,7 +14,7 @@ describe("countdown duration", () => {
   });
 
   it("carries seconds into minutes", () => {
-    expect(stepDuration(3 * 60_000 + 55_000, "seconds", 1)).toBe(4 * 60_000);
+    expect(stepDuration(3 * 60_000 + 59_000, "seconds", 1)).toBe(4 * 60_000);
     expect(stepDuration(4 * 60_000, "minutes", -1)).toBe(3 * 60_000);
   });
 
@@ -28,7 +28,7 @@ describe("countdown duration", () => {
 
   it("keeps each step at its labelled unit", () => {
     expect(stepDuration(5 * 60_000, "minutes", 1)).toBe(6 * 60_000);
-    expect(stepDuration(5 * 60_000, "seconds", -1)).toBe(4 * 60_000 + 55_000);
+    expect(stepDuration(5 * 60_000, "seconds", -1)).toBe(4 * 60_000 + 59_000);
   });
 
   it("carries query parts and clamps the result", () => {
