@@ -24,6 +24,12 @@ export const countdown = (durationMs = DEFAULT_DURATION_MS): Routine => ({
   durationMs: clampDuration(durationMs),
 });
 
+/** Parse URL parts with the same carry and bounds as steppers. */
+export const durationFromParts = (minutes: number, seconds: number): number => {
+  const whole = (value: number) => (Number.isFinite(value) ? Math.trunc(value) : 0);
+  return clampDuration((whole(minutes) * 60 + whole(seconds)) * 1000);
+};
+
 /** Step one labelled unit and carry between seconds and minutes naturally. */
 export const stepDuration = (durationMs: number, unit: DurationUnit, amount: number): number =>
   clampDuration(durationMs + (unit === "minutes" ? 60_000 : 5_000) * amount);

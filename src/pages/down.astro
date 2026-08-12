@@ -14,9 +14,10 @@ import AppLayout from "../layouts/AppLayout.astro";
       <button type="button" data-action="reset">Reset</button>
     </div>
 
-    <p class="finished" data-finished hidden>Finished at 99:59.</p>
+    <p class="finished" data-finished hidden>
+      Finished. Configured duration: <time data-configured-duration>05:00</time>.
+    </p>
 
-    <!-- The digits are not live: per-second announcements make a screen reader unusable. -->
     <p class="visually-hidden" role="status" data-announcer></p>
   </main>
 </AppLayout>
@@ -24,9 +25,16 @@ import AppLayout from "../layouts/AppLayout.astro";
 <script>
   import { elapsedMs, isRunning, pause, reset, resume, start, stopped } from "../domain/clock.ts";
   import type { Clock } from "../domain/clock.ts";
-  import { announceElapsed, formatElapsed, MAX_ELAPSED_MS } from "../domain/format.ts";
-  import { chrono } from "../domain/routine.ts";
+  import { announceElapsed, formatElapsed, formatRemaining } from "../domain/format.ts";
+  import { countdown, DEFAULT_DURATION_MS, durationFromParts } from "../domain/routine.ts";
   import { phaseAt } from "../domain/phase.ts";
+
+  const params = new URLSearchParams(location.search);
+  const hasDuration = params.has("minutes") || params.has("seconds");
+  const durationMs = hasDuration
+    ? durationFromParts(Number(params.get("minutes") ?? 0), Number(params.get("seconds") ?? 0))
+    : DEFAULT_DURATION_MS;
+  const routine = countdown(durationMs);
 
   const display = document.querySelector<HTMLTimeElement>("[data-display]")!;
   const minutes = document.querySelector<HTMLElement>("[data-minutes]")!;
@@ -34,6 +42,7 @@ import AppLayout from "../layouts/AppLayout.astro";
   const primary = document.querySelector<HTMLButtonElement>('[data-action="primary"]')!;
   const resetButton = document.querySelector<HTMLButtonElement>('[data-action="reset"]')!;
   const finished = document.querySelector<HTMLElement>("[data-finished]")!;
+  const configuredDuration = document.querySelector<HTMLTimeElement>("[data-configured-duration]")!;
   const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
 
   let clock: Clock = stopped;
@@ -45,13 +54,15 @@ import AppLayout from "../layouts/AppLayout.astro";
   };
 
   const render = () => {
-    const state = phaseAt(elapsedMs(clock, Date.now()), chrono());
-    const visible = formatElapsed(state.displayMs);
+    const state = phaseAt(elapsedMs(clock, Date.now()), routine);
+    const visible = formatRemaining(state.displayMs);
     const [mm, ss] = visible.split(":");
     minutes.textContent = mm;
     seconds.textContent = ss;
     display.dateTime = `PT${state.displayMs / 1000}S`;
-    display.setAttribute("aria-label", announceElapsed(state.displayMs));
+    display.setAttribute("aria-label", announceElapsed(Math.ceil(state.displayMs / 1000) * 1000));
+    configuredDuration.textContent = formatElapsed(durationMs);
+    configuredDuration.dateTime = `PT${durationMs / 1000}S`;
     document.title = `${visible} · Timer`;
     finished.hidden = !isFinished;
     return state;
@@ -66,7 +77,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     isFinished = true;
     clock = pause(clock, Date.now());
     stopTicking();
-    announce(`Finished at ${announceElapsed(MAX_ELAPSED_MS)}.`);
+    announce(`Finished. Configured duration ${announceElapsed(durationMs)}.`);
     paint();
   };
 
@@ -90,7 +101,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     isFinished = false;
     clock = start(reset(), Date.now());
     stopTicking();
-    announce("Started.");
+    announce(`Started. ${announceElapsed(durationMs)} configured.`);
     paint();
     tick();
   };
@@ -105,7 +116,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     if (isRunning(clock)) {
       clock = pause(clock, now);
       stopTicking();
-      announce(`Paused at ${announceElapsed(elapsedMs(clock, now))}.`);
+      announce(`Paused at ${announceElapsed(Math.ceil(elapsedMs(clock, now) / 1000) * 1000)}.`);
       paint();
       return;
     }
@@ -137,4 +148,5 @@ import AppLayout from "../layouts/AppLayout.astro";
   });
 
   paint();
+  startRunning();
 </script>

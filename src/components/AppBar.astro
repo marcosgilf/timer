@@ -1,0 +1,21 @@
+---
+interface Props {
+  title: string;
+  backHref?: string;
+  backLabel?: string;
+  actionHref?: string;
+  actionLabel?: string;
+}
+
+const { title, backHref, backLabel = "Back", actionHref, actionLabel = "Configure" } = Astro.props as Props;
+---
+
+<header class="app-bar">
+  <div class="app-bar-slot">
+    {backHref && <a href={backHref}>{backLabel}</a>}
+  </div>
+  <h1>{title}</h1>
+  <div class="app-bar-slot app-bar-action">
+    {actionHref && <a href={actionHref}>{actionLabel}</a>}
+  </div>
+</header>

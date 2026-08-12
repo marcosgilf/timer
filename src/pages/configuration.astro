@@ -1,0 +1,95 @@
+---
+import AppBar from "../components/AppBar.astro";
+import AppLayout from "../layouts/AppLayout.astro";
+---
+
+<AppLayout title="Configuration">
+  <main class="configuration-page">
+    <AppBar title="Configuration" backHref="/" backLabel="Back" />
+
+    <form class="configuration-form" data-configuration-form>
+      <fieldset class="direction-choice">
+        <legend>Count direction</legend>
+        <label><input type="radio" name="direction" value="down" checked /> Count down</label>
+        <label><input type="radio" name="direction" value="up" /> Count up</label>
+      </fieldset>
+
+      <fieldset class="duration-settings">
+        <legend>Countdown duration</legend>
+        <time datetime="PT5M" data-display aria-live="off" aria-label="5 minutes">
+          <span class="duration-column">
+            <button type="button" data-step="minutes" data-amount="1" aria-label="Increase countdown minutes">+</button>
+            <span data-minutes aria-hidden="true">05</span>
+            <span class="unit" aria-hidden="true">min</span>
+            <button type="button" data-step="minutes" data-amount="-1" aria-label="Decrease countdown minutes">−</button>
+          </span>
+          <span class="separator" aria-hidden="true">:</span>
+          <span class="duration-column">
+            <button type="button" data-step="seconds" data-amount="1" aria-label="Increase countdown seconds">+</button>
+            <span data-seconds aria-hidden="true">00</span>
+            <span class="unit" aria-hidden="true">sec</span>
+            <button type="button" data-step="seconds" data-amount="-1" aria-label="Decrease countdown seconds">−</button>
+          </span>
+        </time>
+      </fieldset>
+
+      <button type="button" data-action="start">Start count down</button>
+    </form>
+
+    <p class="visually-hidden" role="status" data-announcer></p>
+  </main>
+</AppLayout>
+
+<script>
+  import { announceElapsed, formatElapsed } from "../domain/format.ts";
+  import {
+    DEFAULT_DURATION_MS,
+    stepDuration,
+    type DurationUnit,
+  } from "../domain/routine.ts";
+
+  const display = document.querySelector<HTMLTimeElement>("[data-display]")!;
+  const minutes = document.querySelector<HTMLElement>("[data-minutes]")!;
+  const seconds = document.querySelector<HTMLElement>("[data-seconds]")!;
+  const startButton = document.querySelector<HTMLButtonElement>('[data-action="start"]')!;
+  const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
+  const directionInputs = document.querySelectorAll<HTMLInputElement>('input[name="direction"]');
+  const stepButtons = document.querySelectorAll<HTMLButtonElement>("[data-step]");
+
+  let durationMs = DEFAULT_DURATION_MS;
+
+  const announce = (message: string) => {
+    announcer.textContent = message;
+  };
+
+  const render = () => {
+    const visible = formatElapsed(durationMs);
+    const [mm, ss] = visible.split(":");
+    minutes.textContent = mm;
+    seconds.textContent = ss;
+    display.dateTime = `PT${durationMs / 1000}S`;
+    display.setAttribute("aria-label", announceElapsed(durationMs));
+  };
+
+  directionInputs.forEach((input) => {
+    input.addEventListener("change", () => {
+      if (input.value === "up") location.href = "/";
+    });
+  });
+
+  stepButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      durationMs = stepDuration(durationMs, button.dataset.step as DurationUnit, Number(button.dataset.amount));
+      announce(`Countdown duration ${announceElapsed(durationMs)}.`);
+      render();
+    });
+  });
+
+  startButton.addEventListener("click", () => {
+    const minutesPart = Math.floor(durationMs / 60_000);
+    const secondsPart = Math.floor((durationMs % 60_000) / 1000);
+    location.href = `/down?minutes=${minutesPart}&seconds=${secondsPart}`;
+  });
+
+  render();
+</script>
