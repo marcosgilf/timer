@@ -34,6 +34,13 @@ describe("phaseAt", () => {
     });
   });
 
+  it("finishes count up at its display ceiling", () => {
+    expect(phaseAt(99 * 60_000 + 59_000, chrono())).toMatchObject({
+      status: "done",
+      displayMs: 99 * 60_000 + 59_000,
+    });
+  });
+
   it("does not use negative elapsed time", () => {
     expect(phaseAt(-1, countdown(durationMs))).toMatchObject({
       status: "running",
