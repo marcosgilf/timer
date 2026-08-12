@@ -35,6 +35,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     ? durationFromParts(Number(params.get("minutes") ?? 0), Number(params.get("seconds") ?? 0))
     : DEFAULT_DURATION_MS;
   const routine = countdown(durationMs);
+  const startsPaused = params.has("paused");
 
   const display = document.querySelector<HTMLTimeElement>("[data-display]")!;
   const minutes = document.querySelector<HTMLElement>("[data-minutes]")!;
@@ -51,6 +52,13 @@ import AppLayout from "../layouts/AppLayout.astro";
 
   const announce = (message: string) => {
     announcer.textContent = message;
+  };
+
+  const setPausedUrl = (paused: boolean) => {
+    const url = new URL(location.href);
+    if (paused) url.searchParams.set("paused", "true");
+    else url.searchParams.delete("paused");
+    history.replaceState(null, "", url);
   };
 
   const render = () => {
@@ -100,6 +108,7 @@ import AppLayout from "../layouts/AppLayout.astro";
 
   const startRunning = () => {
     isFinished = false;
+    setPausedUrl(false);
     clock = start(reset(), Date.now());
     stopTicking();
     announce(`Started. ${announceElapsed(durationMs)} configured.`);
@@ -116,6 +125,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     const now = Date.now();
     if (isRunning(clock)) {
       clock = pause(clock, now);
+      setPausedUrl(true);
       stopTicking();
       announce(`Paused at ${announceElapsed(Math.ceil(elapsedMs(clock, now) / 1000) * 1000)}.`);
       paint();
@@ -128,12 +138,14 @@ import AppLayout from "../layouts/AppLayout.astro";
     }
 
     clock = resume(clock, now);
+    setPausedUrl(false);
     announce("Resumed.");
     paint();
     tick();
   });
 
   resetButton.addEventListener("click", () => {
+    setPausedUrl(false);
     clock = reset();
     isFinished = false;
     stopTicking();
@@ -149,5 +161,5 @@ import AppLayout from "../layouts/AppLayout.astro";
   });
 
   paint();
-  startRunning();
+  if (!startsPaused) startRunning();
 </script>

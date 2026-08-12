@@ -45,6 +45,13 @@ import AppLayout from "../layouts/AppLayout.astro";
     announcer.textContent = message;
   };
 
+  const setPausedUrl = (paused: boolean) => {
+    const url = new URL(location.href);
+    if (paused) url.searchParams.set("paused", "true");
+    else url.searchParams.delete("paused");
+    history.replaceState(null, "", url);
+  };
+
   const render = () => {
     const state = phaseAt(elapsedMs(clock, Date.now()), chrono());
     const visible = formatElapsed(state.displayMs);
@@ -92,6 +99,7 @@ import AppLayout from "../layouts/AppLayout.astro";
 
   const startRunning = () => {
     isFinished = false;
+    setPausedUrl(false);
     clock = start(reset(), Date.now());
     stopTicking();
     announce("Started.");
@@ -108,6 +116,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     const now = Date.now();
     if (isRunning(clock)) {
       clock = pause(clock, now);
+      setPausedUrl(true);
       stopTicking();
       announce(`Paused at ${announceElapsed(elapsedMs(clock, now))}.`);
       paint();
@@ -120,12 +129,14 @@ import AppLayout from "../layouts/AppLayout.astro";
     }
 
     clock = resume(clock, now);
+    setPausedUrl(false);
     announce("Resumed.");
     paint();
     tick();
   });
 
   resetButton.addEventListener("click", () => {
+    setPausedUrl(false);
     clock = reset();
     isFinished = false;
     stopTicking();
