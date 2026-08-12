@@ -113,33 +113,17 @@ body > main {
   color: var(--pico-color);
 }
 
-.direction-choice,
 .duration-settings {
-  width: min(100%, 30rem);
+  width: min(100%, 48rem);
   margin: 0;
+  border: 0;
+  padding: 0;
   text-align: left;
 }
 
-.direction-choice {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.direction-choice legend,
 .duration-settings legend {
   width: 100%;
   text-align: center;
-}
-
-.direction-choice label {
-  margin-bottom: 0;
-  white-space: nowrap;
-}
-
-.duration-settings {
-  border: 0;
-  padding: 0;
 }
 
 .duration-settings > time {
@@ -150,7 +134,7 @@ body > main {
   width: 100%;
   margin: 0;
   color: var(--digit-colour);
-  font-size: min(25vw, 32vh);
+  font-size: min(32vw, 44vh);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -160,48 +144,55 @@ body > main {
     0 0 0.22em var(--digit-glow);
 }
 
-.duration-column {
+.duration-labels,
+.stepper-row {
   display: grid;
-  justify-items: center;
-  gap: 0.15rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  width: 100%;
+  text-align: center;
 }
 
-.duration-column > button {
-  min-width: 2.75rem;
+.duration-labels {
+  margin-top: 0.5rem;
+  color: var(--pico-muted-color);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stepper-row {
+  margin-top: 0.5rem;
+}
+
+.stepper-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.stepper-group button {
+  flex: 1;
   min-height: 2.75rem;
   margin: 0;
   padding: 0;
+  border-color: var(--pico-muted-border-color);
+  background: transparent;
+  color: var(--pico-muted-color);
   font-size: 1.5rem;
   line-height: 1;
 }
 
-.duration-column > span[data-minutes],
-.duration-column > span[data-seconds] {
-  font-size: min(25vw, 32vh);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--digit-colour);
-  text-shadow:
-    0 0 0.06em var(--digit-glow),
-    0 0 0.22em var(--digit-glow);
+.stepper-group button:hover {
+  border-color: var(--pico-muted-color);
+  background: var(--pico-muted-border-color);
+  color: var(--pico-color);
 }
-
-.duration-column .unit {
-  font-size: 0.9rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: var(--pico-muted-color);
-  text-transform: uppercase;
-  text-shadow: none;
-}
-
 .configuration-form {
   display: grid;
   align-content: start;
   gap: 1.5rem;
-  width: min(100%, 30rem);
+  width: min(100%, 48rem);
   margin-block: 2rem auto;
 }
 
@@ -267,10 +258,8 @@ body > main {
     font-size: min(34vw, 58vh);
   }
 
-  .duration-settings > time,
-  .duration-column > span[data-minutes],
-  .duration-column > span[data-seconds] {
-    font-size: min(20vw, 40vh);
+  .duration-settings > time {
+    font-size: min(34vw, 58vh);
   }
 }
 

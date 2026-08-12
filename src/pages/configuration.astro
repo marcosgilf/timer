@@ -8,32 +8,28 @@ import AppLayout from "../layouts/AppLayout.astro";
     <AppBar title="Configuration" backHref="/" backLabel="Back" />
 
     <form class="configuration-form" data-configuration-form>
-      <fieldset class="direction-choice">
-        <legend>Count direction</legend>
-        <label><input type="radio" name="direction" value="down" checked /> Count down</label>
-        <label><input type="radio" name="direction" value="up" /> Count up</label>
-      </fieldset>
-
       <fieldset class="duration-settings">
         <legend>Countdown duration</legend>
         <time datetime="PT5M" data-display aria-live="off" aria-label="5 minutes">
-          <span class="duration-column">
-            <button type="button" data-step="minutes" data-amount="1" aria-label="Increase countdown minutes">+</button>
-            <span data-minutes aria-hidden="true">05</span>
-            <span class="unit" aria-hidden="true">min</span>
-            <button type="button" data-step="minutes" data-amount="-1" aria-label="Decrease countdown minutes">−</button>
-          </span>
-          <span class="separator" aria-hidden="true">:</span>
-          <span class="duration-column">
-            <button type="button" data-step="seconds" data-amount="1" aria-label="Increase countdown seconds">+</button>
-            <span data-seconds aria-hidden="true">00</span>
-            <span class="unit" aria-hidden="true">sec</span>
-            <button type="button" data-step="seconds" data-amount="-1" aria-label="Decrease countdown seconds">−</button>
-          </span>
+          <span data-minutes aria-hidden="true">05</span><span class="separator" aria-hidden="true">:</span><span data-seconds aria-hidden="true">00</span>
         </time>
+        <div class="duration-labels" aria-hidden="true">
+          <span>min</span>
+          <span>sec</span>
+        </div>
+        <div class="stepper-row">
+          <div class="stepper-group" role="group" aria-label="Minutes adjustment">
+            <button type="button" data-step="minutes" data-amount="1" aria-label="Increase countdown minutes by one">+</button>
+            <button type="button" data-step="minutes" data-amount="-1" aria-label="Decrease countdown minutes by one">−</button>
+          </div>
+          <div class="stepper-group" role="group" aria-label="Seconds adjustment">
+            <button type="button" data-step="seconds" data-amount="1" aria-label="Increase countdown seconds by one">+</button>
+            <button type="button" data-step="seconds" data-amount="-1" aria-label="Decrease countdown seconds by one">−</button>
+          </div>
+        </div>
       </fieldset>
 
-      <button type="button" data-action="start">Start count down</button>
+      <button type="button" data-action="start">Start</button>
     </form>
 
     <p class="visually-hidden" role="status" data-announcer></p>
@@ -53,7 +49,6 @@ import AppLayout from "../layouts/AppLayout.astro";
   const seconds = document.querySelector<HTMLElement>("[data-seconds]")!;
   const startButton = document.querySelector<HTMLButtonElement>('[data-action="start"]')!;
   const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
-  const directionInputs = document.querySelectorAll<HTMLInputElement>('input[name="direction"]');
   const stepButtons = document.querySelectorAll<HTMLButtonElement>("[data-step]");
 
   let durationMs = DEFAULT_DURATION_MS;
@@ -70,12 +65,6 @@ import AppLayout from "../layouts/AppLayout.astro";
     display.dateTime = `PT${durationMs / 1000}S`;
     display.setAttribute("aria-label", announceElapsed(durationMs));
   };
-
-  directionInputs.forEach((input) => {
-    input.addEventListener("change", () => {
-      if (input.value === "up") location.href = "/";
-    });
-  });
 
   stepButtons.forEach((button) => {
     button.addEventListener("click", () => {
