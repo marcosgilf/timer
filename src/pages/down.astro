@@ -36,6 +36,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     : DEFAULT_DURATION_MS;
   const routine = countdown(durationMs);
   const startsPaused = params.has("paused");
+  const startsDone = params.has("done");
 
   const display = document.querySelector<HTMLTimeElement>("[data-display]")!;
   const minutes = document.querySelector<HTMLElement>("[data-minutes]")!;
@@ -47,17 +48,18 @@ import AppLayout from "../layouts/AppLayout.astro";
   const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
 
   let clock: Clock = stopped;
-  let isFinished = false;
+  let isFinished = startsDone;
   let frame = 0;
 
   const announce = (message: string) => {
     announcer.textContent = message;
   };
 
-  const setPausedUrl = (paused: boolean) => {
+  const setUrlState = (state: "running" | "paused" | "done") => {
     const url = new URL(location.href);
-    if (paused) url.searchParams.set("paused", "true");
-    else url.searchParams.delete("paused");
+    url.searchParams.delete("paused");
+    url.searchParams.delete("done");
+    if (state !== "running") url.searchParams.set(state, "true");
     history.replaceState(null, "", url);
   };
 
@@ -86,6 +88,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     isFinished = true;
     clock = pause(clock, Date.now());
     stopTicking();
+    setUrlState("done");
     announce(`Done count down: ${announceElapsed(durationMs)}.`);
     paint();
   };
@@ -108,7 +111,7 @@ import AppLayout from "../layouts/AppLayout.astro";
 
   const startRunning = () => {
     isFinished = false;
-    setPausedUrl(false);
+    setUrlState("running");
     clock = start(reset(), Date.now());
     stopTicking();
     announce(`Started. ${announceElapsed(durationMs)} configured.`);
@@ -125,7 +128,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     const now = Date.now();
     if (isRunning(clock)) {
       clock = pause(clock, now);
-      setPausedUrl(true);
+      setUrlState("paused");
       stopTicking();
       announce(`Paused at ${announceElapsed(Math.ceil(elapsedMs(clock, now) / 1000) * 1000)}.`);
       paint();
@@ -138,14 +141,14 @@ import AppLayout from "../layouts/AppLayout.astro";
     }
 
     clock = resume(clock, now);
-    setPausedUrl(false);
+    setUrlState("running");
     announce("Resumed.");
     paint();
     tick();
   });
 
   resetButton.addEventListener("click", () => {
-    setPausedUrl(false);
+    setUrlState("running");
     clock = reset();
     isFinished = false;
     stopTicking();
@@ -161,5 +164,5 @@ import AppLayout from "../layouts/AppLayout.astro";
   });
 
   paint();
-  if (!startsPaused) startRunning();
+  if (!startsPaused && !startsDone) startRunning();
 </script>
