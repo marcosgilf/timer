@@ -134,7 +134,7 @@ body > main {
   width: 100%;
   margin: 0;
   color: var(--digit-colour);
-  font-size: min(32vw, 44vh);
+  font-size: min(24vw, 32vh);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -265,7 +265,7 @@ body > main {
   }
 
   .duration-settings > time {
-    font-size: min(34vw, 58vh);
+    font-size: min(24vw, 40vh);
   }
 }
 
