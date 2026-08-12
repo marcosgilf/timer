@@ -276,8 +276,7 @@ One full-width Mode button per row, text centred; 3-column grid at ≥900px. Six
 
 ### Config
 
-Per-field block, minutes ±1 and seconds ±5, both also typeable via
-`<input type="number" inputmode="numeric">`:
+Per-field block, minutes ±1 and seconds ±1. Free-text entry is absent:
 
 ```
 Work
