@@ -20,6 +20,7 @@ describe("countdown duration", () => {
 
   it("clamps silently at the smallest and largest display values", () => {
     expect(countdown(0).durationMs).toBe(MIN_DURATION_MS);
+    expect(countdown(Number.NaN).durationMs).toBe(MIN_DURATION_MS);
     expect(countdown(MAX_DURATION_MS + 1).durationMs).toBe(MAX_DURATION_MS);
     expect(stepDuration(MIN_DURATION_MS, "seconds", -1)).toBe(MIN_DURATION_MS);
     expect(stepDuration(MAX_DURATION_MS, "seconds", 1)).toBe(MAX_DURATION_MS);
@@ -35,5 +36,6 @@ describe("countdown duration", () => {
     expect(durationFromParts(0, 75)).toBe(75_000);
     expect(durationFromParts(-1, 0)).toBe(MIN_DURATION_MS);
     expect(durationFromParts(99, 60)).toBe(MAX_DURATION_MS);
+    expect(durationFromParts(Number.NaN, Number.POSITIVE_INFINITY)).toBe(MIN_DURATION_MS);
   });
 });

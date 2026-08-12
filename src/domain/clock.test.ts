@@ -13,6 +13,11 @@ describe("clock", () => {
     expect(elapsedMs(clock, 4500)).toBe(3500);
   });
 
+  it("does not restart an already started clock", () => {
+    const clock = start(stopped, 1000);
+    expect(start(clock, 5000)).toEqual(clock);
+  });
+
   it("freezes while paused", () => {
     const clock = pause(start(stopped, 0), 5000);
     expect(elapsedMs(clock, 5000)).toBe(5000);
