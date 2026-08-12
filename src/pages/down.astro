@@ -4,19 +4,19 @@ import TimerDisplay from "../components/TimerDisplay.astro";
 import AppLayout from "../layouts/AppLayout.astro";
 ---
 
-<AppLayout title="Timer">
+<AppLayout title="Down Timer">
   <main>
     <AppBar title="Timer" actionHref="/configuration" actionLabel="Configure" />
     <TimerDisplay />
+
+    <p class="finished" data-finished aria-hidden="true">
+      Done count down: <time data-configured-duration>05:00</time>
+    </p>
 
     <div class="controls">
       <button type="button" data-action="primary">Start</button>
       <button type="button" data-action="reset">Reset</button>
     </div>
-
-    <p class="finished" data-finished hidden>
-      Finished. Configured duration: <time data-configured-duration>05:00</time>.
-    </p>
 
     <p class="visually-hidden" role="status" data-announcer></p>
   </main>
@@ -63,8 +63,9 @@ import AppLayout from "../layouts/AppLayout.astro";
     display.setAttribute("aria-label", announceElapsed(Math.ceil(state.displayMs / 1000) * 1000));
     configuredDuration.textContent = formatElapsed(durationMs);
     configuredDuration.dateTime = `PT${durationMs / 1000}S`;
-    document.title = `${visible} · Timer`;
-    finished.hidden = !isFinished;
+    document.title = isFinished ? `Done - ${formatElapsed(durationMs)} - Down Timer` : `${visible} - Down Timer`;
+    finished.dataset.visible = String(isFinished);
+    finished.setAttribute("aria-hidden", String(!isFinished));
     return state;
   };
 
@@ -77,7 +78,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     isFinished = true;
     clock = pause(clock, Date.now());
     stopTicking();
-    announce(`Finished. Configured duration ${announceElapsed(durationMs)}.`);
+    announce(`Done count down: ${announceElapsed(durationMs)}.`);
     paint();
   };
 

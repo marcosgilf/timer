@@ -4,17 +4,17 @@ import TimerDisplay from "../components/TimerDisplay.astro";
 import AppLayout from "../layouts/AppLayout.astro";
 ---
 
-<AppLayout title="Timer">
+<AppLayout title="00:00 - Timer">
   <main>
     <AppBar title="Timer" actionHref="/configuration" actionLabel="Configure" />
     <TimerDisplay />
+
+    <p class="finished" data-finished aria-hidden="true">Done: <time data-finished-time>99:59</time></p>
 
     <div class="controls">
       <button type="button" data-action="primary">Start</button>
       <button type="button" data-action="reset">Reset</button>
     </div>
-
-    <p class="finished" data-finished hidden>Finished at 99:59.</p>
 
     <!-- The digits are not live: per-second announcements make a screen reader unusable. -->
     <p class="visually-hidden" role="status" data-announcer></p>
@@ -34,6 +34,7 @@ import AppLayout from "../layouts/AppLayout.astro";
   const primary = document.querySelector<HTMLButtonElement>('[data-action="primary"]')!;
   const resetButton = document.querySelector<HTMLButtonElement>('[data-action="reset"]')!;
   const finished = document.querySelector<HTMLElement>("[data-finished]")!;
+  const finishedTime = document.querySelector<HTMLTimeElement>("[data-finished-time]")!;
   const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
 
   let clock: Clock = stopped;
@@ -52,8 +53,11 @@ import AppLayout from "../layouts/AppLayout.astro";
     seconds.textContent = ss;
     display.dateTime = `PT${state.displayMs / 1000}S`;
     display.setAttribute("aria-label", announceElapsed(state.displayMs));
-    document.title = `${visible} · Timer`;
-    finished.hidden = !isFinished;
+    document.title = isFinished ? `Done - ${visible} - Timer` : `${visible} - Timer`;
+    finished.dataset.visible = String(isFinished);
+    finished.setAttribute("aria-hidden", String(!isFinished));
+    finishedTime.textContent = formatElapsed(MAX_ELAPSED_MS);
+    finishedTime.dateTime = `PT${MAX_ELAPSED_MS / 1000}S`;
     return state;
   };
 
@@ -66,7 +70,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     isFinished = true;
     clock = pause(clock, Date.now());
     stopTicking();
-    announce(`Finished at ${announceElapsed(MAX_ELAPSED_MS)}.`);
+    announce(`Done: ${announceElapsed(MAX_ELAPSED_MS)}.`);
     paint();
   };
 
