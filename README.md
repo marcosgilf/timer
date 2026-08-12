@@ -48,7 +48,7 @@ pnpm dev          # http://localhost:4321
 | `pnpm check` | `astro check` (types) + oxlint + oxfmt |
 | `pnpm format` | oxlint `--fix` + oxfmt `--write` |
 | `pnpm test` | vitest (unit) |
-| `pnpm test:coverage` | vitest with a coverage report (reported, never gated) |
+| `pnpm test:coverage` | vitest with a coverage report and 90% global thresholds |
 | `pnpm check:dependencies` | fail when patch updates are available |
 | `pnpm check:audit` | fail on high/critical npm advisories |
 

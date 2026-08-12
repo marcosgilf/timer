@@ -532,8 +532,9 @@ mock was called. **A manual check on a real phone before shipping is the control
 ### Where it runs, and coverage
 
 `pre-push` runs `pnpm check && pnpm test` (unit only — pushing must not take 90 seconds).
-`pnpm test:e2e` is manual until CI exists. `@vitest/coverage-v8` reports via `pnpm test:coverage`,
-with **no threshold and no gate** — a percentage target invites tests written for the number.
+`pnpm test:e2e` is manual until CI exists. `@vitest/coverage-v8` reports via `pnpm test:coverage`.
+Vitest enforces 90% global thresholds for statements, branches, functions, and lines; no higher target
+is imposed because percentage chasing invites tests written for the number.
 
 ---
 
@@ -569,8 +570,8 @@ Out of scope. None of these is a gap to fill; each was decided against.
 Genuinely undecided. An implementer should raise these rather than assume.
 
 - ~~**CI**~~ — resolved after the spec was written: CI workflow and
-  Netlify site and timer.marcosgilf.com are closed. CI is a
-  signal, not a gate; deploys are gated on a green `qa` job; e2e stays out of CI until tests exist; the
+  Netlify site and timer.marcosgilf.com are closed. Vitest coverage thresholds gate `qa`; deploys are
+  gated on a green `qa` job; e2e stays out of CI until tests exist; the
   app is live at `timer.marcosgilf.com`.
 - **Default values for `Prefs`** — only `prepareMs` has a stated default (10s). Starting `muted`,
   `volume`, `ticks` and `vibrate` values are unspecified.
