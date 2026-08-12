@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.3.0](https://github.com/marcosgilf/timer/compare/v0.2.0...v0.3.0) (2026-08-12)
+
+
+### Features
+
+* **countdown:** add configurable count direction ([eefdcc1](https://github.com/marcosgilf/timer/commit/eefdcc1f0057789598de1877297cda6aa8940ed0))
+* **ux:** add routed countdown configuration ([826c516](https://github.com/marcosgilf/timer/commit/826c516fab6664302f0cdc7110dbc24c4f4487a1))
+* **ux:** add up navigation to countdown ([1b1a123](https://github.com/marcosgilf/timer/commit/1b1a1239cbb5e97e62154e8aff2b7f516409e9c0))
+* **ux:** reflect paused state in URL ([78c39bc](https://github.com/marcosgilf/timer/commit/78c39bc7cd100d11bb569dfc52e45721e910e7f1))
+* **ux:** simplify countdown configuration ([bab9bdc](https://github.com/marcosgilf/timer/commit/bab9bdce312499e11d721b51227bcb2c10e77ecc))
+
+
+### Bug Fixes
+
+* **a11y:** make stepper buttons individually focusable ([71f6cb2](https://github.com/marcosgilf/timer/commit/71f6cb23ab95aff87d9e059c9b33dd519c6177e6))
+* **countdown:** step seconds by one ([879fda1](https://github.com/marcosgilf/timer/commit/879fda1e4e2adf5919dd880078513d5002131fad))
+* **pwa:** preserve routed countdown pages ([5e1581f](https://github.com/marcosgilf/timer/commit/5e1581fd80e65088ac0ac990c3440430519f0def))
+* **ux:** fit configuration display on desktop ([1e6d841](https://github.com/marcosgilf/timer/commit/1e6d841ef53e5a163b761082838230c6b5ac6bc2))
+* **ux:** reserve done status space ([f8f2989](https://github.com/marcosgilf/timer/commit/f8f2989a9cc74364c9231042af3c6e1ab93319c0))
+* **ux:** reserve version footer space ([ed102a9](https://github.com/marcosgilf/timer/commit/ed102a9147af8017a75bf4d5aa5265afbe756779))
+
 ## [0.2.0](https://github.com/marcosgilf/timer/compare/v0.1.0...v0.2.0) (2026-08-11)
 
 
