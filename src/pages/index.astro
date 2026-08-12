@@ -37,18 +37,20 @@ import AppLayout from "../layouts/AppLayout.astro";
   const finishedTime = document.querySelector<HTMLTimeElement>("[data-finished-time]")!;
   const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
 
+  const startsDone = new URLSearchParams(location.search).has("done");
   let clock: Clock = stopped;
-  let isFinished = false;
+  let isFinished = startsDone;
   let frame = 0;
 
   const announce = (message: string) => {
     announcer.textContent = message;
   };
 
-  const setPausedUrl = (paused: boolean) => {
+  const setUrlState = (state: "running" | "paused" | "done") => {
     const url = new URL(location.href);
-    if (paused) url.searchParams.set("paused", "true");
-    else url.searchParams.delete("paused");
+    url.searchParams.delete("paused");
+    url.searchParams.delete("done");
+    if (state !== "running") url.searchParams.set(state, "true");
     history.replaceState(null, "", url);
   };
 
@@ -60,7 +62,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     seconds.textContent = ss;
     display.dateTime = `PT${state.displayMs / 1000}S`;
     display.setAttribute("aria-label", announceElapsed(state.displayMs));
-    document.title = isFinished ? `Done - ${visible} - Timer` : `${visible} - Timer`;
+    document.title = isFinished ? `Done - ${formatElapsed(MAX_ELAPSED_MS)} - Timer` : `${visible} - Timer`;
     finished.dataset.visible = String(isFinished);
     finished.setAttribute("aria-hidden", String(!isFinished));
     finishedTime.textContent = formatElapsed(MAX_ELAPSED_MS);
@@ -77,6 +79,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     isFinished = true;
     clock = pause(clock, Date.now());
     stopTicking();
+    setUrlState("done");
     announce(`Done: ${announceElapsed(MAX_ELAPSED_MS)}.`);
     paint();
   };
@@ -99,7 +102,7 @@ import AppLayout from "../layouts/AppLayout.astro";
 
   const startRunning = () => {
     isFinished = false;
-    setPausedUrl(false);
+    setUrlState("running");
     clock = start(reset(), Date.now());
     stopTicking();
     announce("Started.");
@@ -116,7 +119,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     const now = Date.now();
     if (isRunning(clock)) {
       clock = pause(clock, now);
-      setPausedUrl(true);
+      setUrlState("paused");
       stopTicking();
       announce(`Paused at ${announceElapsed(elapsedMs(clock, now))}.`);
       paint();
@@ -129,14 +132,14 @@ import AppLayout from "../layouts/AppLayout.astro";
     }
 
     clock = resume(clock, now);
-    setPausedUrl(false);
+    setUrlState("running");
     announce("Resumed.");
     paint();
     tick();
   });
 
   resetButton.addEventListener("click", () => {
-    setPausedUrl(false);
+    setUrlState("running");
     clock = reset();
     isFinished = false;
     stopTicking();
