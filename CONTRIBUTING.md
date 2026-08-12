@@ -48,6 +48,18 @@ Use Conventional Commits for PR titles / squash commit messages so Release Pleas
 - Update `docs/spec.md` when behaviour changes, and `CONTEXT.md` when vocabulary does.
 - Tests belong with any change to the pure core (`phaseAt`, cue scheduling, persistence parsing).
 
+### Preview deployment handoff
+
+PR QA and Netlify deploys run asynchronously. Agents must not wait for them after pushing. Return summary
+of changes, local validation results, and manual preview test steps; user tests after deploy completes.
+
+Minimum preview test flow:
+
+1. Open Netlify preview URL from PR comment.
+2. Verify `/` count-up start, pause, reset, and URL state.
+3. Open `/configuration`, configure duration, and start count down.
+4. Verify `/down?minutes=1&seconds=5` loads count down, pause/resume URL state, and `done=true` on completion.
+
 ## Reporting bugs
 
 Open an issue on GitHub with what you did, what you expected, what happened, and your
