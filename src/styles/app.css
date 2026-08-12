@@ -1,4 +1,4 @@
-/* Room-readable digits and the small amount of layout Pico cannot express. */
+/* Room-readable digits and app-specific layout Pico cannot express. */
 
 :root {
   --pico-background-color: #0b0b0c;
@@ -15,9 +15,9 @@
 }
 
 body > main {
-  display: grid;
-  align-content: center;
-  justify-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 0.75rem;
   min-height: 100dvh;
   width: 100%;
@@ -27,13 +27,89 @@ body > main {
   text-align: center;
 }
 
-body > main > h1 {
+.app-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: min(100%, 48rem);
+  min-height: 2.75rem;
+  margin: 0;
+}
+
+.app-bar h1 {
   margin: 0;
   font-size: 1rem;
   font-weight: 400;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--pico-muted-color);
+}
+
+.app-bar-slot {
+  display: flex;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.app-bar-action {
+  justify-content: flex-end;
+}
+
+.app-bar a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding-inline: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.timer-display {
+  display: block;
+  max-width: 100%;
+  margin-block: auto;
+  white-space: nowrap;
+  color: var(--digit-colour);
+  font-size: min(32vw, 44vh);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-shadow:
+    0 0 0.06em var(--digit-glow),
+    0 0 0.22em var(--digit-glow);
+}
+
+.separator {
+  display: inline-block;
+  color: var(--digit-colour);
+  transform: translateY(-0.09em);
+}
+
+.controls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  width: min(100%, 16rem);
+  margin-top: 0.5rem;
+}
+
+.controls button,
+.configuration-form > button {
+  min-height: 2.75rem;
+  margin: 0;
+}
+
+.controls button {
+  flex: 1;
+  padding-block: 0.35rem;
+  font-size: 0.95rem;
+}
+
+.controls button[data-action="reset"] {
+  background: transparent;
+  border-color: var(--pico-muted-border-color);
+  color: var(--pico-color);
 }
 
 .direction-choice,
@@ -99,8 +175,7 @@ body > main > h1 {
 }
 
 .duration-column > span[data-minutes],
-.duration-column > span[data-seconds],
-.chrono-display {
+.duration-column > span[data-seconds] {
   font-size: min(25vw, 32vh);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -121,39 +196,16 @@ body > main > h1 {
   text-shadow: none;
 }
 
-.separator {
-  display: inline-block;
-  color: var(--digit-colour);
-  transform: translateY(-0.09em);
+.configuration-form {
+  display: grid;
+  align-content: start;
+  gap: 1.5rem;
+  width: min(100%, 30rem);
+  margin-block: 2rem auto;
 }
 
-.chrono-display {
-  display: block;
-  margin: 0;
-  max-width: 100%;
-  white-space: nowrap;
-}
-
-.controls {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  width: min(100%, 16rem);
-  margin-top: 0.5rem;
-}
-
-.controls button {
-  flex: 1;
-  min-height: 2.75rem;
-  margin: 0;
-  padding-block: 0.35rem;
-  font-size: 0.95rem;
-}
-
-.controls button[data-action="reset"] {
-  background: transparent;
-  border-color: var(--pico-muted-border-color);
-  color: var(--pico-color);
+.configuration-form > button {
+  width: 100%;
 }
 
 .finished {
@@ -204,10 +256,13 @@ body > main > h1 {
     gap: 0.35rem;
   }
 
+  .timer-display {
+    font-size: min(34vw, 58vh);
+  }
+
   .duration-settings > time,
   .duration-column > span[data-minutes],
-  .duration-column > span[data-seconds],
-  .chrono-display {
+  .duration-column > span[data-seconds] {
     font-size: min(20vw, 40vh);
   }
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   countdown,
   DEFAULT_DURATION_MS,
+  durationFromParts,
   MAX_DURATION_MS,
   MIN_DURATION_MS,
   stepDuration,
@@ -27,5 +28,12 @@ describe("countdown duration", () => {
   it("keeps each step at its labelled unit", () => {
     expect(stepDuration(5 * 60_000, "minutes", 1)).toBe(6 * 60_000);
     expect(stepDuration(5 * 60_000, "seconds", -1)).toBe(4 * 60_000 + 55_000);
+  });
+
+  it("carries query parts and clamps the result", () => {
+    expect(durationFromParts(1, 10)).toBe(70_000);
+    expect(durationFromParts(0, 75)).toBe(75_000);
+    expect(durationFromParts(-1, 0)).toBe(MIN_DURATION_MS);
+    expect(durationFromParts(99, 60)).toBe(MAX_DURATION_MS);
   });
 });
