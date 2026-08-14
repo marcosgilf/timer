@@ -8,8 +8,8 @@ import AppLayout from "../layouts/AppLayout.astro";
     <AppBar title="Configuration" backHref="/" backLabel="Up" />
 
     <form class="configuration-form" data-configuration-form>
-      <fieldset class="duration-settings">
-        <legend>Countdown duration</legend>
+      <fieldset class="duration-settings" data-phase-settings="work">
+        <legend>Work</legend>
         <time datetime="PT5M" data-display aria-live="off" aria-label="5 minutes">
           <span data-minutes aria-hidden="true">05</span><span class="separator" aria-hidden="true">:</span><span data-seconds aria-hidden="true">00</span>
         </time>
@@ -19,17 +19,47 @@ import AppLayout from "../layouts/AppLayout.astro";
         </div>
         <div class="stepper-row">
           <div class="stepper-group">
-            <button type="button" data-step="minutes" data-amount="1" aria-label="Increase countdown minutes by one">+</button>
-            <button type="button" data-step="minutes" data-amount="-1" aria-label="Decrease countdown minutes by one">−</button>
+            <button type="button" data-step="minutes" data-amount="1" aria-label="Increase work minutes by one">+</button>
+            <button type="button" data-step="minutes" data-amount="-1" aria-label="Decrease work minutes by one">−</button>
           </div>
           <div class="stepper-group">
-            <button type="button" data-step="seconds" data-amount="1" aria-label="Increase countdown seconds by one">+</button>
-            <button type="button" data-step="seconds" data-amount="-1" aria-label="Decrease countdown seconds by one">−</button>
+            <button type="button" data-step="seconds" data-amount="1" aria-label="Increase work seconds by one">+</button>
+            <button type="button" data-step="seconds" data-amount="-1" aria-label="Decrease work seconds by one">−</button>
           </div>
         </div>
       </fieldset>
 
-      <button type="button" data-action="accept">Accept</button>
+      <fieldset class="duration-settings" data-phase-settings="rest">
+        <legend>Rest <small>(0 means none)</small></legend>
+        <time datetime="PT0S" data-display aria-live="off" aria-label="0 seconds">
+          <span data-minutes aria-hidden="true">00</span><span class="separator" aria-hidden="true">:</span><span data-seconds aria-hidden="true">00</span>
+        </time>
+        <div class="duration-labels" aria-hidden="true">
+          <span>min</span>
+          <span>sec</span>
+        </div>
+        <div class="stepper-row">
+          <div class="stepper-group">
+            <button type="button" data-step="minutes" data-amount="1" aria-label="Increase rest minutes by one">+</button>
+            <button type="button" data-step="minutes" data-amount="-1" aria-label="Decrease rest minutes by one">−</button>
+          </div>
+          <div class="stepper-group">
+            <button type="button" data-step="seconds" data-amount="1" aria-label="Increase rest seconds by one">+</button>
+            <button type="button" data-step="seconds" data-amount="-1" aria-label="Decrease rest seconds by one">−</button>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="round-settings">
+        <legend>Rounds</legend>
+        <output data-rounds aria-label="1 round">1</output>
+        <div class="stepper-group">
+          <button type="button" data-step="rounds" data-amount="1" aria-label="Increase rounds by one">+</button>
+          <button type="button" data-step="rounds" data-amount="-1" aria-label="Decrease rounds by one">−</button>
+        </div>
+      </fieldset>
+
+      <button type="button" data-action="start">Start</button>
     </form>
 
     <p class="visually-hidden" role="status" data-announcer></p>
@@ -39,29 +69,43 @@ import AppLayout from "../layouts/AppLayout.astro";
 <script>
   import { announceElapsed, formatElapsed } from "../domain/format.ts";
   import {
+    clampRounds,
     DEFAULT_DURATION_MS,
     durationFromParts,
     stepDuration,
+    stepRounds,
     type DurationUnit,
   } from "../domain/routine.ts";
 
-  const display = document.querySelector<HTMLTimeElement>("[data-display]")!;
-  const minutes = document.querySelector<HTMLElement>("[data-minutes]")!;
-  const seconds = document.querySelector<HTMLElement>("[data-seconds]")!;
-  const acceptButton = document.querySelector<HTMLButtonElement>('[data-action="accept"]')!;
+  const params = new URLSearchParams(location.search);
+  const workSettings = document.querySelector<HTMLElement>('[data-phase-settings="work"]')!;
+  const restSettings = document.querySelector<HTMLElement>('[data-phase-settings="rest"]')!;
+  const roundsDisplay = document.querySelector<HTMLOutputElement>("[data-rounds]")!;
+  const startButton = document.querySelector<HTMLButtonElement>('[data-action="start"]')!
   const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
   const stepButtons = document.querySelectorAll<HTMLButtonElement>("[data-step]");
 
-  const params = new URLSearchParams(location.search);
-  let durationMs = params.has("minutes") || params.has("seconds")
-    ? durationFromParts(Number(params.get("minutes") ?? 0), Number(params.get("seconds") ?? 0))
+  const param = (...names: string[]) => names.find((name) => params.has(name));
+  const workMinutes = param("workMinutes", "minutes");
+  const workSeconds = param("workSeconds", "seconds");
+  const restMinutes = param("restMinutes");
+  const restSeconds = param("restSeconds");
+  let workMs = workMinutes || workSeconds
+    ? durationFromParts(Number(params.get(workMinutes ?? "")), Number(params.get(workSeconds ?? "")))
     : DEFAULT_DURATION_MS;
+  let restMs = restMinutes || restSeconds
+    ? durationFromParts(Number(params.get(restMinutes ?? "")), Number(params.get(restSeconds ?? "")), true)
+    : 0;
+  let rounds = clampRounds(Number(params.get("rounds") ?? 1));
 
   const announce = (message: string) => {
     announcer.textContent = message;
   };
 
-  const render = () => {
+  const renderDuration = (settings: HTMLElement, durationMs: number) => {
+    const display = settings.querySelector<HTMLTimeElement>("[data-display]")!;
+    const minutes = settings.querySelector<HTMLElement>("[data-minutes]")!;
+    const seconds = settings.querySelector<HTMLElement>("[data-seconds]")!;
     const visible = formatElapsed(durationMs);
     const [mm, ss] = visible.split(":");
     minutes.textContent = mm;
@@ -70,18 +114,49 @@ import AppLayout from "../layouts/AppLayout.astro";
     display.setAttribute("aria-label", announceElapsed(durationMs));
   };
 
+  const render = () => {
+    renderDuration(workSettings, workMs);
+    renderDuration(restSettings, restMs);
+    roundsDisplay.textContent = String(rounds);
+    roundsDisplay.setAttribute("aria-label", `${rounds} ${rounds === 1 ? "round" : "rounds"}`);
+  };
+
   stepButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      durationMs = stepDuration(durationMs, button.dataset.step as DurationUnit, Number(button.dataset.amount));
-      announce(`Countdown duration ${announceElapsed(durationMs)}.`);
+      const step = button.dataset.step;
+      const amount = Number(button.dataset.amount);
+      if (step === "rounds") {
+        rounds = stepRounds(rounds, amount);
+        announce(`Rounds: ${rounds}.`);
+      } else {
+        const settings = button.closest<HTMLElement>("[data-phase-settings]")!;
+        const isRest = settings.dataset.phaseSettings === "rest";
+        const duration = isRest ? restMs : workMs;
+        const next = stepDuration(duration, step as DurationUnit, amount, isRest);
+        if (isRest) restMs = next;
+        else workMs = next;
+        announce(`${isRest ? "Rest" : "Work"}: ${announceElapsed(next)}.`);
+      }
       render();
     });
   });
 
-  acceptButton.addEventListener("click", () => {
-    const minutesPart = Math.floor(durationMs / 60_000);
-    const secondsPart = Math.floor((durationMs % 60_000) / 1000);
-    location.href = `/down?minutes=${minutesPart}&seconds=${secondsPart}&paused=true`;
+  startButton.addEventListener("click", () => {
+    const parts = (durationMs: number) => ({
+      minutes: String(Math.floor(durationMs / 60_000)),
+      seconds: String(Math.floor(durationMs / 1000) % 60),
+    });
+    const work = parts(workMs);
+    const rest = parts(restMs);
+    const query = new URLSearchParams({
+      minutes: work.minutes,
+      seconds: work.seconds,
+      restMinutes: rest.minutes,
+      restSeconds: rest.seconds,
+      rounds: String(rounds),
+      paused: "true",
+    });
+    location.href = `/down?${query}`;
   });
 
   render();

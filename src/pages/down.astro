@@ -12,8 +12,14 @@ import AppLayout from "../layouts/AppLayout.astro";
     <p class="wake-lock-error" data-wake-lock-error role="alert" hidden></p>
     <p class="audio-note" data-audio-note hidden>Tap Start to enable sound.</p>
 
+    <p class="phase-status" data-phase-status data-phase="work" aria-live="polite">
+      <strong data-phase-kind>Work</strong>
+      <span>Round <span data-round>1</span> of <span data-total-rounds>1</span></span>
+      <span data-next-phase></span>
+    </p>
+
     <p class="finished" data-finished aria-hidden="true">
-      Done count down: <time data-configured-duration>05:00</time>
+      Done: <span data-completed-rounds>1</span> of <span data-summary-rounds>1</span> rounds
     </p>
 
     <div class="controls">
@@ -28,18 +34,30 @@ import AppLayout from "../layouts/AppLayout.astro";
 <script>
   import { elapsedMs, isRunning, pause, reset, resume, start, stopped } from "../domain/clock.ts";
   import type { Clock } from "../domain/clock.ts";
-  import { announceElapsed, formatElapsed, formatRemaining } from "../domain/format.ts";
-  import { countdown, DEFAULT_DURATION_MS, durationFromParts } from "../domain/routine.ts";
+  import { announceElapsed, formatRemaining } from "../domain/format.ts";
+  import {
+    clampRounds,
+    countdown,
+    DEFAULT_DURATION_MS,
+    durationFromParts,
+  } from "../domain/routine.ts";
   import { phaseAt } from "../domain/phase.ts";
   import { createCompletionSound } from "../client/completion-sound.ts";
   import { createScreenWakeLock, type ScreenWakeLockManager } from "../client/wake-lock.ts";
 
   const params = new URLSearchParams(location.search);
-  const hasDuration = params.has("minutes") || params.has("seconds");
-  const durationMs = hasDuration
-    ? durationFromParts(Number(params.get("minutes") ?? 0), Number(params.get("seconds") ?? 0))
+  const workMinutes = params.get("workMinutes") ?? params.get("minutes");
+  const workSeconds = params.get("workSeconds") ?? params.get("seconds");
+  const hasWorkDuration = workMinutes !== null || workSeconds !== null;
+  const durationMs = hasWorkDuration
+    ? durationFromParts(Number(workMinutes ?? 0), Number(workSeconds ?? 0))
     : DEFAULT_DURATION_MS;
-  const routine = countdown(durationMs);
+  const restMs = params.has("restMinutes") || params.has("restSeconds")
+    ? durationFromParts(Number(params.get("restMinutes") ?? 0), Number(params.get("restSeconds") ?? 0), true)
+    : 0;
+  const rounds = clampRounds(Number(params.get("rounds") ?? 1));
+  const routine = countdown(durationMs, restMs, rounds);
+  const totalDurationMs = (routine.durationMs + routine.restMs) * routine.rounds;
   const startsDone = params.has("done");
 
   const display = document.querySelector<HTMLTimeElement>("[data-display]")!;
@@ -48,7 +66,13 @@ import AppLayout from "../layouts/AppLayout.astro";
   const primary = document.querySelector<HTMLButtonElement>('[data-action="primary"]')!;
   const resetButton = document.querySelector<HTMLButtonElement>('[data-action="reset"]')!;
   const finished = document.querySelector<HTMLElement>("[data-finished]")!;
-  const configuredDuration = document.querySelector<HTMLTimeElement>("[data-configured-duration]")!;
+  const phaseStatus = document.querySelector<HTMLElement>("[data-phase-status]")!;
+  const phaseKind = document.querySelector<HTMLElement>("[data-phase-kind]")!;
+  const round = document.querySelector<HTMLElement>("[data-round]")!;
+  const totalRounds = document.querySelector<HTMLElement>("[data-total-rounds]")!;
+  const nextPhase = document.querySelector<HTMLElement>("[data-next-phase]")!;
+  const completedRounds = document.querySelector<HTMLElement>("[data-completed-rounds]")!;
+  const summaryRounds = document.querySelector<HTMLElement>("[data-summary-rounds]")!;
   const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
   const wakeLockError = document.querySelector<HTMLElement>("[data-wake-lock-error]")!;
   const audioNote = document.querySelector<HTMLElement>("[data-audio-note]")!;
@@ -100,7 +124,7 @@ import AppLayout from "../layouts/AppLayout.astro";
 
   const scheduleSound = (resumeExisting = false) => {
     const request = ++soundRequest;
-    const remainingMs = routine.durationMs - elapsedMs(clock, Date.now());
+    const remainingMs = totalDurationMs - elapsedMs(clock, Date.now());
     const schedule = resumeExisting ? completionSound.resume(remainingMs) : completionSound.start(remainingMs);
     void schedule.then((enabled) => {
       if (request !== soundRequest || isFinished || !isRunning(clock)) return;
@@ -120,19 +144,28 @@ import AppLayout from "../layouts/AppLayout.astro";
     history.replaceState(null, "", url);
   };
 
+  const labelPhase = (kind: string) => kind.charAt(0).toUpperCase() + kind.slice(1);
+
   const render = () => {
-    const state = phaseAt(elapsedMs(clock, Date.now()), routine);
-    const visible = formatRemaining(state.displayMs);
+    const state = isFinished ? phaseAt(totalDurationMs, routine) : phaseAt(elapsedMs(clock, Date.now()), routine);
+    const visible = formatRemaining(state.remainingInPhaseMs);
     const [mm, ss] = visible.split(":");
+    const currentPhase = isFinished ? "done" : state.phaseKind;
     minutes.textContent = mm;
     seconds.textContent = ss;
-    display.dateTime = `PT${state.displayMs / 1000}S`;
-    display.setAttribute("aria-label", announceElapsed(Math.ceil(state.displayMs / 1000) * 1000));
-    configuredDuration.textContent = formatElapsed(durationMs);
-    configuredDuration.dateTime = `PT${durationMs / 1000}S`;
+    display.dateTime = `PT${state.remainingInPhaseMs / 1000}S`;
+    display.setAttribute("aria-label", isFinished ? "Done" : `${labelPhase(state.phaseKind)}, ${announceElapsed(Math.ceil(state.remainingInPhaseMs / 1000) * 1000)}`);
+    phaseStatus.dataset.phase = currentPhase;
+    phaseKind.textContent = labelPhase(currentPhase);
+    round.textContent = String(state.round);
+    totalRounds.textContent = String(state.totalRounds);
+    nextPhase.textContent = state.nextPhaseKind && state.nextPhaseKind !== "done" ? `Next: ${labelPhase(state.nextPhaseKind)}` : "";
+    completedRounds.textContent = String(state.round);
+    summaryRounds.textContent = String(state.totalRounds);
     const status = isFinished ? "Done" : isRunning(clock) ? "Running" : clock.startedAt === null ? "" : "Paused";
     document.body.dataset.routineActive = String(!isFinished && clock.startedAt !== null);
-    const nextTitle = status ? `${status} · ${visible} - Down Timer` : `${visible} - Down Timer`;
+    const phaseLabel = isFinished ? "Done" : `${labelPhase(state.phaseKind)} · Round ${state.round} of ${state.totalRounds}`;
+    const nextTitle = status ? `${status} · ${phaseLabel} · ${visible} - Timer` : `${visible} - Timer`;
     if (nextTitle !== pageTitle) {
       pageTitle = nextTitle;
       document.title = nextTitle;
@@ -155,7 +188,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     releaseWakeLock();
     stopTicking();
     setUrlState("done");
-    announce(`Done count down: ${announceElapsed(durationMs)}.`);
+    announce(`Done. ${routine.rounds} ${routine.rounds === 1 ? "round" : "rounds"} completed.`);
     paint();
     window.dispatchEvent(new Event("timer:counter-inactive"));
   };
@@ -183,7 +216,9 @@ import AppLayout from "../layouts/AppLayout.astro";
     scheduleSound();
     void refreshWakeLock();
     stopTicking();
-    announce(`Started. ${announceElapsed(durationMs)} configured.`);
+    announce(
+      `Started. ${announceElapsed(routine.durationMs)} work${routine.restMs > 0 ? `, ${announceElapsed(routine.restMs)} rest` : ""}, ${routine.rounds} ${routine.rounds === 1 ? "round" : "rounds"}.`,
+    );
     paint();
     tick();
   };
@@ -234,8 +269,11 @@ import AppLayout from "../layouts/AppLayout.astro";
 
   const configurationUrl = new URL("/configuration", location.origin);
   configurationUrl.search = new URLSearchParams({
-    minutes: String(Math.floor(durationMs / 60_000)),
-    seconds: String(Math.floor(durationMs / 1000) % 60),
+    minutes: String(Math.floor(routine.durationMs / 60_000)),
+    seconds: String(Math.floor(routine.durationMs / 1000) % 60),
+    restMinutes: String(Math.floor(routine.restMs / 60_000)),
+    restSeconds: String(Math.floor(routine.restMs / 1000) % 60),
+    rounds: String(routine.rounds),
   }).toString();
   configurationLink.href = `${configurationUrl.pathname}${configurationUrl.search}`;
 

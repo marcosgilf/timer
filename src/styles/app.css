@@ -205,6 +205,35 @@ body > main {
   outline-offset: 2px;
 }
 
+.round-settings {
+  width: min(100%, 48rem);
+  margin: 0;
+  border: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.round-settings legend {
+  width: 100%;
+}
+
+.round-settings output {
+  display: block;
+  color: var(--digit-colour);
+  font-size: 3rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow:
+    0 0 0.06em var(--digit-glow),
+    0 0 0.22em var(--digit-glow);
+}
+
+.round-settings .stepper-group {
+  width: min(100%, 16rem);
+  margin: 0.75rem auto 0;
+}
+
 .configuration-form {
   display: grid;
   align-content: start;
@@ -215,6 +244,34 @@ body > main {
 
 .configuration-form > button {
   width: 100%;
+}
+
+.phase-status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 1.5rem;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.phase-status[data-phase="work"] {
+  color: #4ade80;
+}
+
+.phase-status[data-phase="rest"] {
+  color: #ff7b7b;
+}
+
+.phase-status[data-phase="done"] {
+  color: var(--pico-muted-color);
+}
+
+.phase-status strong {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .wake-lock-error,
