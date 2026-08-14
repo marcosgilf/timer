@@ -40,6 +40,7 @@ import AppLayout from "../layouts/AppLayout.astro";
   import { announceElapsed, formatElapsed } from "../domain/format.ts";
   import {
     DEFAULT_DURATION_MS,
+    durationFromParts,
     stepDuration,
     type DurationUnit,
   } from "../domain/routine.ts";
@@ -51,7 +52,10 @@ import AppLayout from "../layouts/AppLayout.astro";
   const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
   const stepButtons = document.querySelectorAll<HTMLButtonElement>("[data-step]");
 
-  let durationMs = DEFAULT_DURATION_MS;
+  const params = new URLSearchParams(location.search);
+  let durationMs = params.has("minutes") || params.has("seconds")
+    ? durationFromParts(Number(params.get("minutes") ?? 0), Number(params.get("seconds") ?? 0))
+    : DEFAULT_DURATION_MS;
 
   const announce = (message: string) => {
     announcer.textContent = message;
