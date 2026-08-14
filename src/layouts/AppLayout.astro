@@ -37,8 +37,10 @@ const deployLabel =
   </head>
   <body>
     <slot />
-    {deployLabel && <small class="deploy-clue" aria-label={`Deployment context ${deployLabel}`}>{deployLabel}</small>}
-    <small class="app-version" aria-label={`Timer version ${version}`}>v{version}</small>
+    <footer class="app-footer">
+      {deployLabel && <small class="deploy-clue" aria-label={`Deployment context ${deployLabel}`}>{deployLabel}</small>}
+      <small class="app-version" aria-label={`Timer version ${version}`}>v{version}</small>
+    </footer>
 
     <script>
       import { registerSW } from "virtual:pwa-register";
