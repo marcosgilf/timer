@@ -232,7 +232,7 @@ body > main {
 .app-version,
 .deploy-clue {
   position: fixed;
-  bottom: max(0.5rem, env(safe-area-inset-bottom));
+  bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
   margin: 0;
   color: var(--pico-muted-color);
   font-size: 0.75rem;
@@ -241,11 +241,11 @@ body > main {
 }
 
 .app-version {
-  right: max(0.5rem, env(safe-area-inset-right));
+  right: calc(0.5rem + env(safe-area-inset-right, 0px));
 }
 
 .deploy-clue {
-  left: max(0.5rem, env(safe-area-inset-left));
+  left: calc(0.5rem + env(safe-area-inset-left, 0px));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
