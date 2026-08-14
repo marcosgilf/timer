@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.1](https://github.com/marcosgilf/timer/compare/v0.4.0...v0.4.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* expose wake lock API errors ([d225255](https://github.com/marcosgilf/timer/commit/d225255b7b3a01058e4ec92975dca4c6895488cb))
+* label home navigation as up ([5843388](https://github.com/marcosgilf/timer/commit/5843388a90ab284094c711963afdb7572e8664c9))
+* make deployment hints scroll with footer ([ebe0759](https://github.com/marcosgilf/timer/commit/ebe07593975c1e32f9ddeea59b21e9fcb6cb2d4b))
+* report wake lock acquisition failures ([fb30e76](https://github.com/marcosgilf/timer/commit/fb30e762afe504f6a734a1da90f386d28ae09b9b))
+* require explicit countdown start ([d643724](https://github.com/marcosgilf/timer/commit/d643724bfb7ecea97ff78aefc23f4718f117aa1b))
+* respect preview SHA and iOS safe areas ([59f5bce](https://github.com/marcosgilf/timer/commit/59f5bce750ff2903e47d35e832188fd8b1975ff4))
+
 ## [0.4.0](https://github.com/marcosgilf/timer/compare/v0.3.0...v0.4.0) (2026-08-14)
 
 
