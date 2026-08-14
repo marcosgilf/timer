@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.0](https://github.com/marcosgilf/timer/compare/v0.4.1...v0.5.0) (2026-08-14)
+
+
+### Features
+
+* **pwa:** activate updates on counter start ([7932218](https://github.com/marcosgilf/timer/commit/7932218ca97294c4587e6e5bdeccb625098440c9))
+* **pwa:** prompt before activating updates ([66b5604](https://github.com/marcosgilf/timer/commit/66b560464a9e8bdc038742d9ec4215f86641642c))
+
+
+### Bug Fixes
+
+* **pwa:** clear update highlight after reload ([40a441d](https://github.com/marcosgilf/timer/commit/40a441d240fd37ff63ea05374f257ea75a200a2e))
+* **pwa:** update immediately when idle ([66e441c](https://github.com/marcosgilf/timer/commit/66e441c722e779bbda345affec210aee15293c44))
+
 ## [0.4.1](https://github.com/marcosgilf/timer/compare/v0.4.0...v0.4.1) (2026-08-14)
 
 
