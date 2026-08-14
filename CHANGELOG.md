@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.1](https://github.com/marcosgilf/timer/compare/v0.5.0...v0.5.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **layout:** keep app bar fixed on scroll ([3374c9f](https://github.com/marcosgilf/timer/commit/3374c9fb2feeed4f6d639ebc188a148c1a5e4497))
+* **layout:** keep release version on right ([ccde863](https://github.com/marcosgilf/timer/commit/ccde8634bf2a61fe96c780addf55cd7d6a6c6b70))
+* **pwa:** place update marker by deployment ([f92fcc1](https://github.com/marcosgilf/timer/commit/f92fcc135065dd0f50180fbe7f4a9e2cf10c3f8e))
+
 ## [0.5.0](https://github.com/marcosgilf/timer/compare/v0.4.1...v0.5.0) (2026-08-14)
 
 
