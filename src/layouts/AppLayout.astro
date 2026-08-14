@@ -51,6 +51,7 @@ const deployLabel =
 
       try {
         if (sessionStorage.getItem(updateMarker) === "true") {
+          sessionStorage.removeItem(updateMarker);
           const versionLabel = appVersion.getAttribute("aria-label") ?? "Timer version";
           appVersion.textContent = `NEW ${appVersion.textContent ?? ""}`;
           appVersion.dataset.updated = "true";

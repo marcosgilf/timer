@@ -431,9 +431,9 @@ layer below is feature-detected, adds capability where present, and is a no-op w
 - No update button, confirmation prompt, toast dependency, popover/polyfill, polling or custom
   service-worker manager. Standalone Home Screen PWAs use the same service-worker lifecycle: on launch,
   registration checks for an update; `updateSW(true)` activates it and reloads the page.
-- Before activation, store a session marker. The new build prefixes the bottom version with green
-  **NEW vX.X.X** for the current app session. Clear the marker only when activation fails. Version
-  highlighting is optional; storage failures do not block update activation or timer behavior.
+- Before activation, store a session marker. The new build consumes the marker on first render, prefixes
+  the bottom version with green **NEW vX.X.X**, then clears it. Version highlighting is optional; storage
+  failures do not block update activation or timer behavior.
 - Registration errors are swallowed; offline use of the current version remains unaffected.
 
 ### Install and manifest
@@ -595,7 +595,7 @@ Genuinely undecided. An implementer should raise these rather than assume.
   `volume`, `ticks` and `vibrate` values are unspecified.
 - ~~**Update-prompt UI**~~ — resolved: no update control. A waiting worker activates immediately when
   idle, or after an active Routine reaches Done/Reset; the new build labels its bottom version **NEW vX.X.X**
-  in green for the current app session.
+  in green for that reload only.
 - **Install guidance copy for iOS** — decided that it must be static copy (no
   `beforeinstallprompt`), but not what it says or which screen hosts it.
 - ~~**App name, iconography, favicon/manifest icon set, `theme_color`**~~ — resolved: app name

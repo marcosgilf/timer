@@ -28,7 +28,7 @@ is a Tabata whether or not anything is labelled "Tabata".
 - **Offline-first** — precached service worker, no backend, no accounts, no analytics. Installable as
   **Timer**; waiting updates apply immediately when no Routine is active.
 - **Automatic updates** — an active or paused Routine defers a waiting worker until Done or Reset. The
-  new build reloads automatically, then the bottom version shows green **NEW vx.x.x** for the current app session.
+  new build reloads automatically, then the bottom version shows green **NEW vx.x.x** for that reload only.
 - **Progressive enhancement** — audio session, Wake Lock and vibration are feature-detected and no-ops
   where absent. The app is fully correct without any of them.
 - **Semantic and accessible** — [Pico CSS](https://picocss.com/) classless, WCAG 2.2 AA in every slice.
