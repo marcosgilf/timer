@@ -154,6 +154,7 @@ import AppLayout from "../layouts/AppLayout.astro";
   };
 
   const startRunning = () => {
+    window.dispatchEvent(new Event("timer:counter-activated"));
     isFinished = false;
     setUrlState("running");
     clock = start(reset(), Date.now());
@@ -238,7 +239,7 @@ import AppLayout from "../layouts/AppLayout.astro";
   });
 
   window.addEventListener("beforeunload", (event) => {
-    if (document.body.dataset.routineActive !== "true" || confirmedNavigation || document.body.dataset.navigationConfirmed === "true") return;
+    if (document.body.dataset.routineActive !== "true" || confirmedNavigation) return;
     event.preventDefault();
   });
 

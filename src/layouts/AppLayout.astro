@@ -35,36 +35,51 @@ const deployLabel =
     <link rel="manifest" href="/manifest.webmanifest" />
     <title>{title}</title>
   </head>
-  <body data-routine-active="false">
+  <body>
     <slot />
-    <button type="button" class="update-control" data-update-control hidden>Reload to update</button>
     <footer class="app-footer">
       {deployLabel && <small class="deploy-clue" aria-label={`Deployment context ${deployLabel}`}>{deployLabel}</small>}
-      <small class="app-version" aria-label={`Timer version ${version}`}>v{version}</small>
+      <small class="app-version" data-app-version aria-label={`Timer version ${version}`}>v{version}</small>
     </footer>
 
     <script>
       import { registerSW } from "virtual:pwa-register";
       import { createPwaUpdateController, type RegisterSW } from "../client/pwa-update.ts";
 
-      const updateControl = document.querySelector<HTMLButtonElement>("[data-update-control]")!;
+      const appVersion = document.querySelector<HTMLElement>("[data-app-version]")!;
+      const updateMarker = "timer:update-activated";
+
+      try {
+        if (sessionStorage.getItem(updateMarker) === "true") {
+          const versionLabel = appVersion.getAttribute("aria-label") ?? "Timer version";
+          appVersion.textContent = `NEW ${appVersion.textContent ?? ""}`;
+          appVersion.dataset.updated = "true";
+          appVersion.setAttribute("aria-label", `New ${versionLabel}`);
+        }
+      } catch {
+        // Version highlighting is optional. Timer behavior stays independent.
+      }
+
       const registerServiceWorker: RegisterSW = (options) => registerSW(options);
       const update = createPwaUpdateController({
         registerSW: registerServiceWorker,
-        isRoutineActive: () => document.body.dataset.routineActive === "true",
-        confirmLeave: () => window.confirm("Leave the active Routine and reload?"),
-        onUpdateReady: () => {
-          updateControl.hidden = false;
-        },
-        onActivationConfirmed: () => {
-          document.body.dataset.navigationConfirmed = "true";
+        onActivationStarted: () => {
+          try {
+            sessionStorage.setItem(updateMarker, "true");
+          } catch {
+            // Session storage is optional. Update activation still proceeds.
+          }
         },
         onActivationFailed: () => {
-          delete document.body.dataset.navigationConfirmed;
+          try {
+            sessionStorage.removeItem(updateMarker);
+          } catch {
+            // Session storage is optional. Timer behavior stays independent.
+          }
         },
       });
 
-      updateControl.addEventListener("click", () => {
+      window.addEventListener("timer:counter-activated", () => {
         void update.activate();
       });
       update.register();
