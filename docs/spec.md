@@ -417,9 +417,25 @@ layer below is feature-detected, adds capability where present, and is a no-op w
   pnpm, or the build fails with `Rolldown failed to resolve import "workbox-window"`.
 - Add `/// <reference types="vite-plugin-pwa/client" />` to `src/env.d.ts` for the virtual-module types.
 - **`registerType: 'prompt'`, never `autoUpdate`** — an auto-reload mid-Routine would destroy the
-  running clock. The update prompt is a plain `.astro` component with a `<script>`.
+  running clock. The update control is plain Astro markup with a thin `<script>`.
 - Precache everything: the app is static with no API. Measured cost: 1.3 KB `sw.js` + 15 KB workbox
   (SW scope only), 1.27 KB gzip on the page.
+
+#### Update activation
+
+- Use `registerType: 'prompt'`, never `autoUpdate`. A waiting worker must not activate or reload while
+  someone is using a Routine.
+- Capture `updateSW` from `registerSW({ onNeedRefresh })`. Keep native **Reload to update** hidden until
+  `onNeedRefresh` fires; reveal it on every page, including standalone display mode. Keep it visible until
+  activation or page reload — never auto-dismiss it.
+- Clicking the button calls `updateSW(true)`. It is the only update activation path and reloads once into
+  the waiting version. No toast dependency, popover/polyfill, polling or custom service-worker manager.
+- A Routine is active when started and not Done. **Paused counts as active** because reload discards its
+  in-memory Clock. Active Routines get one native leave-confirmation decision before activation; Cancel
+  preserves current page, version and Routine, with button still visible. Idle and Done activate without
+  confirmation. The confirmed decision suppresses any second beforeunload prompt.
+- Registration errors are swallowed; update support must never affect timer behavior or offline use of the
+  current version.
 
 ### Install and manifest
 
@@ -578,8 +594,9 @@ Genuinely undecided. An implementer should raise these rather than assume.
   app is live at `timer.marcosgilf.com`.
 - **Default values for `Prefs`** — only `prepareMs` has a stated default (10s). Starting `muted`,
   `volume`, `ticks` and `vibrate` values are unspecified.
-- ~~**Update-prompt UI**~~ — resolved: no prompt. The service worker auto-updates and the new build
-  is picked up on page reload, so timing is never interrupted.
+- ~~**Update-prompt UI**~~ — resolved: a native **Reload to update** button appears when a worker waits.
+  Activation is user-controlled; running and paused Routines require one leave confirmation, while idle
+  and Done activate without confirmation. No automatic reload.
 - **Install guidance copy for iOS** — decided that it must be static copy (no
   `beforeinstallprompt`), but not what it says or which screen hosts it.
 - ~~**App name, iconography, favicon/manifest icon set, `theme_color`**~~ — resolved: app name

@@ -26,7 +26,10 @@ is a Tabata whether or not anything is labelled "Tabata".
 - **Accurate by construction** — state is derived from a wall-clock timestamp with a pure
   `phaseAt(elapsed, routine)`; nothing accumulates ticks, so nothing drifts.
 - **Offline-first** — precached service worker, no backend, no accounts, no analytics. Installable as
-  **Timer**; updates are picked up on page reload, not via a modal prompt.
+  **Timer**; waiting updates stay pending until user activates **Reload to update**.
+- **Prompted updates** — the native update button appears on every page, including standalone display.
+  Running or paused Routines require one leave confirmation; Cancel keeps current version and Routine.
+  No update ever reloads automatically.
 - **Progressive enhancement** — audio session, Wake Lock and vibration are feature-detected and no-ops
   where absent. The app is fully correct without any of them.
 - **Semantic and accessible** — [Pico CSS](https://picocss.com/) classless, WCAG 2.2 AA in every slice.
