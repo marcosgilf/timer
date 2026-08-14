@@ -7,23 +7,23 @@ export type RegisterSW = (options: {
 
 type PwaUpdateControllerOptions = {
   registerSW: RegisterSW;
+  isRoutineActive: () => boolean;
   onActivationStarted: () => void;
   onActivationFailed?: () => void;
 };
 
 export const createPwaUpdateController = ({
   registerSW,
+  isRoutineActive,
   onActivationStarted,
   onActivationFailed,
 }: PwaUpdateControllerOptions) => {
   let updateSW: UpdateSW | null = null;
   let updateReady = false;
-  let activationRequested = false;
   let activationStarted = false;
 
   const activate = async (): Promise<boolean> => {
-    activationRequested = true;
-    if (!updateReady || !updateSW || activationStarted) return false;
+    if (!updateReady || !updateSW || activationStarted || isRoutineActive()) return false;
 
     activationStarted = true;
 
@@ -43,7 +43,7 @@ export const createPwaUpdateController = ({
       updateSW = registerSW({
         onNeedRefresh: () => {
           updateReady = true;
-          if (activationRequested) void activate();
+          if (!isRoutineActive()) void activate();
         },
         onRegisterError: () => {},
       });

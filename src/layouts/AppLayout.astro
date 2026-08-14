@@ -35,7 +35,7 @@ const deployLabel =
     <link rel="manifest" href="/manifest.webmanifest" />
     <title>{title}</title>
   </head>
-  <body>
+  <body data-routine-active="false">
     <slot />
     <footer class="app-footer">
       {deployLabel && <small class="deploy-clue" aria-label={`Deployment context ${deployLabel}`}>{deployLabel}</small>}
@@ -63,6 +63,7 @@ const deployLabel =
       const registerServiceWorker: RegisterSW = (options) => registerSW(options);
       const update = createPwaUpdateController({
         registerSW: registerServiceWorker,
+        isRoutineActive: () => document.body.dataset.routineActive === "true",
         onActivationStarted: () => {
           try {
             sessionStorage.setItem(updateMarker, "true");
@@ -79,7 +80,7 @@ const deployLabel =
         },
       });
 
-      window.addEventListener("timer:counter-activated", () => {
+      window.addEventListener("timer:counter-inactive", () => {
         void update.activate();
       });
       update.register();

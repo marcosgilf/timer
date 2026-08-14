@@ -416,22 +416,21 @@ layer below is feature-detected, adds capability where present, and is a no-op w
   `virtual:pwa-register` by hand; (2) **`workbox-window` must be an explicit devDependency** under
   pnpm, or the build fails with `Rolldown failed to resolve import "workbox-window"`.
 - Add `/// <reference types="vite-plugin-pwa/client" />` to `src/env.d.ts` for the virtual-module types.
-- **`registerType: 'prompt'`, never `autoUpdate`** — hold a waiting worker until a counter activates it.
-  The activation path is a thin Astro script around the service-worker registration wrapper.
+- **`registerType: 'prompt'`, never `autoUpdate`** — activate a waiting worker immediately when no
+  Routine is active. The activation path is a thin Astro script around the service-worker registration wrapper.
 - Precache everything: the app is static with no API. Measured cost: 1.3 KB `sw.js` + 15 KB workbox
   (SW scope only), 1.27 KB gzip on the page.
 
 #### Update activation
 
 - Use `registerType: 'prompt'`, never `autoUpdate`. Capture `updateSW` from
-  `registerSW({ onNeedRefresh })`; a waiting worker stays idle until counter activation.
-- Every counter start path — count-up, count down, and restart — emits one activation event. If a worker
-  waits, the event calls `updateSW(true)` and reloads automatically into the waiting version. If the
-  readiness callback arrives just after the event, activation starts as soon as it is ready. Pause and
-  resume do not emit activation events.
+  `registerSW({ onNeedRefresh })`. When the callback fires, activate immediately if no Routine is active;
+  otherwise leave the worker waiting.
+- A running or paused Routine counts as active. When it reaches Done or the user presses Reset, emit an
+  inactive event and retry `updateSW(true)`. This applies update without discarding an in-memory Clock.
 - No update button, confirmation prompt, toast dependency, popover/polyfill, polling or custom
-  service-worker manager. Automatic reload is intentional and may discard a newly started in-memory
-  Clock; the next page starts with the new build.
+  service-worker manager. Standalone Home Screen PWAs use the same service-worker lifecycle: on launch,
+  registration checks for an update; `updateSW(true)` activates it and reloads the page.
 - Before activation, store a session marker. The new build prefixes the bottom version with green
   **NEW vX.X.X** for the current app session. Clear the marker only when activation fails. Version
   highlighting is optional; storage failures do not block update activation or timer behavior.
@@ -594,8 +593,9 @@ Genuinely undecided. An implementer should raise these rather than assume.
   app is live at `timer.marcosgilf.com`.
 - **Default values for `Prefs`** — only `prepareMs` has a stated default (10s). Starting `muted`,
   `volume`, `ticks` and `vibrate` values are unspecified.
-- ~~**Update-prompt UI**~~ — resolved: no update control. A waiting worker activates and reloads when any
-  counter starts or restarts; the new build labels its bottom version **NEW vX.X.X** in green for current app session.
+- ~~**Update-prompt UI**~~ — resolved: no update control. A waiting worker activates immediately when
+  idle, or after an active Routine reaches Done/Reset; the new build labels its bottom version **NEW vX.X.X**
+  in green for the current app session.
 - **Install guidance copy for iOS** — decided that it must be static copy (no
   `beforeinstallprompt`), but not what it says or which screen hosts it.
 - ~~**App name, iconography, favicon/manifest icon set, `theme_color`**~~ — resolved: app name

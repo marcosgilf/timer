@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createPwaUpdateController, type RegisterSW } from "./pwa-update.ts";
 
 const createHarness = () => {
+  let routineActive = false;
   let onNeedRefresh = () => {};
   const updateSW = vi.fn<ReturnType<RegisterSW>>();
   updateSW.mockResolvedValue(undefined);
@@ -13,6 +14,7 @@ const createHarness = () => {
   const onActivationFailed = vi.fn();
   const controller = createPwaUpdateController({
     registerSW,
+    isRoutineActive: () => routineActive,
     onActivationStarted,
     onActivationFailed,
   });
@@ -25,44 +27,47 @@ const createHarness = () => {
     updateSW,
     onActivationStarted,
     onActivationFailed,
+    setRoutineActive: (active: boolean) => {
+      routineActive = active;
+    },
   };
 };
 
 describe("PWA update controller", () => {
-  it("starts current and becomes ready only when service worker needs refresh", () => {
+  it("activates waiting update immediately when no Routine is active", () => {
     const harness = createHarness();
-
-    expect(harness.controller.ready).toBe(false);
     harness.controller.register();
-    expect(harness.controller.ready).toBe(false);
 
     harness.onNeedRefresh();
 
     expect(harness.controller.ready).toBe(true);
-    expect(harness.updateSW).not.toHaveBeenCalled();
-  });
-
-  it("activates ready update automatically when a counter starts", async () => {
-    const harness = createHarness();
-    harness.controller.register();
-    harness.onNeedRefresh();
-
-    await expect(harness.controller.activate()).resolves.toBe(true);
-
     expect(harness.onActivationStarted).toHaveBeenCalledOnce();
     expect(harness.updateSW).toHaveBeenCalledOnce();
     expect(harness.updateSW).toHaveBeenCalledWith(true);
   });
 
-  it("waits for update readiness when counter starts first", async () => {
+  it("keeps waiting update while Routine is active", async () => {
     const harness = createHarness();
+    harness.setRoutineActive(true);
     harness.controller.register();
-
-    await expect(harness.controller.activate()).resolves.toBe(false);
-    expect(harness.updateSW).not.toHaveBeenCalled();
 
     harness.onNeedRefresh();
 
+    expect(harness.controller.ready).toBe(true);
+    expect(harness.updateSW).not.toHaveBeenCalled();
+    await expect(harness.controller.activate()).resolves.toBe(false);
+    expect(harness.updateSW).not.toHaveBeenCalled();
+  });
+
+  it("activates deferred update when Routine becomes inactive", async () => {
+    const harness = createHarness();
+    harness.setRoutineActive(true);
+    harness.controller.register();
+    harness.onNeedRefresh();
+
+    harness.setRoutineActive(false);
+
+    await expect(harness.controller.activate()).resolves.toBe(true);
     expect(harness.onActivationStarted).toHaveBeenCalledOnce();
     expect(harness.updateSW).toHaveBeenCalledOnce();
   });
@@ -82,6 +87,7 @@ describe("PWA update controller", () => {
 
   it("does not activate twice while first activation is in flight", async () => {
     const harness = createHarness();
+    harness.setRoutineActive(true);
     let resolveUpdate = () => {};
     harness.updateSW.mockImplementation(
       () =>
@@ -91,6 +97,7 @@ describe("PWA update controller", () => {
     );
     harness.controller.register();
     harness.onNeedRefresh();
+    harness.setRoutineActive(false);
 
     const first = harness.controller.activate();
     const second = harness.controller.activate();
@@ -107,6 +114,7 @@ describe("PWA update controller", () => {
     });
     const controller = createPwaUpdateController({
       registerSW,
+      isRoutineActive: () => false,
       onActivationStarted: vi.fn(),
     });
 

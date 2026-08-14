@@ -26,9 +26,9 @@ is a Tabata whether or not anything is labelled "Tabata".
 - **Accurate by construction** — state is derived from a wall-clock timestamp with a pure
   `phaseAt(elapsed, routine)`; nothing accumulates ticks, so nothing drifts.
 - **Offline-first** — precached service worker, no backend, no accounts, no analytics. Installable as
-  **Timer**; waiting updates stay pending until a counter activates them.
-- **Automatic updates** — starting or restarting any counter activates a waiting worker and reloads into
-  the new build. The bottom version shows green **NEW vx.x.x** for the current app session.
+  **Timer**; waiting updates apply immediately when no Routine is active.
+- **Automatic updates** — an active or paused Routine defers a waiting worker until Done or Reset. The
+  new build reloads automatically, then the bottom version shows green **NEW vx.x.x** for the current app session.
 - **Progressive enhancement** — audio session, Wake Lock and vibration are feature-detected and no-ops
   where absent. The app is fully correct without any of them.
 - **Semantic and accessible** — [Pico CSS](https://picocss.com/) classless, WCAG 2.2 AA in every slice.
