@@ -9,7 +9,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     <AppBar title="Timer" actionHref="/configuration" />
     <TimerDisplay />
 
-    <p class="wake-lock-note" data-wake-lock-note hidden>Screen may sleep — keep it awake for sound.</p>
+    <p class="wake-lock-error" data-wake-lock-error role="alert" hidden>Couldn’t keep the screen awake. Check your device display settings.</p>
 
     <p class="finished" data-finished aria-hidden="true">Done: <time data-finished-time>99:59</time></p>
 
@@ -39,7 +39,7 @@ import AppLayout from "../layouts/AppLayout.astro";
   const finished = document.querySelector<HTMLElement>("[data-finished]")!;
   const finishedTime = document.querySelector<HTMLTimeElement>("[data-finished-time]")!;
   const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
-  const wakeLockNote = document.querySelector<HTMLElement>("[data-wake-lock-note]")!;
+  const wakeLockError = document.querySelector<HTMLElement>("[data-wake-lock-error]")!;
 
   const startsDone = new URLSearchParams(location.search).has("done");
   let clock: Clock = stopped;
@@ -60,11 +60,14 @@ import AppLayout from "../layouts/AppLayout.astro";
 
   const refreshWakeLock = async () => {
     if (!isRunning(clock) || document.hidden) return;
-    wakeLockNote.hidden = !(await wakeLock.acquire());
+    const result = await wakeLock.acquire();
+    if (!isRunning(clock) || document.hidden) return;
+    if (result === "failed") wakeLockError.hidden = false;
+    if (result === "acquired" || result === "unsupported") wakeLockError.hidden = true;
   };
 
   const releaseWakeLock = () => {
-    wakeLockNote.hidden = true;
+    wakeLockError.hidden = true;
     void wakeLock.release();
   };
 
@@ -186,7 +189,7 @@ import AppLayout from "../layouts/AppLayout.astro";
   document.addEventListener("visibilitychange", () => {
     paint();
     if (document.hidden) {
-      void wakeLock.release();
+      releaseWakeLock();
       return;
     }
     if (isRunning(clock)) {

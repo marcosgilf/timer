@@ -304,7 +304,7 @@ Mode-dependent behaviour:
 - **No mute control here** — the phone's volume buttons work face-down on the floor, need no aiming
   and cost no pixels.
 - Conditional one-line notes: "tap to enable sound" if the `AudioContext` is still suspended (§3),
-  and "Screen may sleep — keep it awake for sound." where Wake Lock is absent (§6).
+  and "Couldn’t keep the screen awake. Check your device display settings." when a supported Wake Lock request fails (§6). Missing Wake Lock support is silent.
 
 ### Done
 
@@ -401,7 +401,7 @@ layer below is feature-detected, adds capability where present, and is a no-op w
 |---|---|---|---|
 | Baseline | — | accurate time, visible cues | — |
 | Audio session | `"audioSession" in navigator` | `type = "transient"` while running | no-op (Chrome, Firefox) |
-| Wake Lock | `"wakeLock" in navigator` | screen held during a Routine | note on Running screen |
+| Wake Lock | `"wakeLock" in navigator` | screen held during a Routine | no-op, no notice |
 | Vibration | `"vibrate" in navigator` | haptics per §3 | toggle hidden |
 
 ### Service worker and offline
@@ -438,8 +438,10 @@ layer below is feature-detected, adds capability where present, and is a no-op w
   16.4–18.3 is partial: it does not work in standalone Home Screen web apps
   ([WebKit bug 254545](https://bugs.webkit.org/show_bug.cgi?id=254545)). **The installed-iOS case
   this project targets has no Wake Lock below iOS 18.4.**
-- Fallback: feature-detect, let the screen sleep, recompute from `Date.now()` on wake, and show the
-  one-line note *"Screen may sleep — keep it awake for sound."* on the Running screen.
+- Fallback: feature-detect, let the screen sleep, and recompute from `Date.now()` on wake. Missing
+  support is silent. If a supported initial request or visible-running reacquisition rejects, show
+  *"Couldn’t keep the screen awake. Check your device display settings."* until the Routine is idle,
+  paused, Done, Reset, or acquisition succeeds.
   **No silent-video keepalive hacks** — battery cost, folklore, and they break.
 
 ### Audio session — `"transient"`, not `"playback"`
