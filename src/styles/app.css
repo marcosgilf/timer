@@ -23,7 +23,6 @@ body > main {
   width: 100%;
   max-width: none;
   padding: 1rem max(0.5rem, env(safe-area-inset-left)) 1rem max(0.5rem, env(safe-area-inset-right));
-  padding-bottom: calc(3rem + env(safe-area-inset-bottom));
   overflow-x: hidden;
   text-align: center;
 }
@@ -229,10 +228,20 @@ body > main {
   font-variant-numeric: tabular-nums;
 }
 
-.app-version,
-.deploy-clue {
-  position: fixed;
-  bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding-block: 0.5rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  padding-inline: calc(0.5rem + env(safe-area-inset-left, 0px))
+    calc(0.5rem + env(safe-area-inset-right, 0px));
+}
+
+.app-footer small {
   margin: 0;
   color: var(--pico-muted-color);
   font-size: 0.75rem;
@@ -240,12 +249,7 @@ body > main {
   user-select: none;
 }
 
-.app-version {
-  right: calc(0.5rem + env(safe-area-inset-right, 0px));
-}
-
 .deploy-clue {
-  left: calc(0.5rem + env(safe-area-inset-left, 0px));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
