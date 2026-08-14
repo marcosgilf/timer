@@ -57,8 +57,8 @@ Minimum preview test flow:
 
 1. Open Netlify preview URL from PR comment.
 2. Verify `/` count-up start, pause, reset, and URL state.
-3. Open `/configuration`, configure duration, and start count down.
-4. Verify `/down?minutes=1&seconds=5` loads count down, pause/resume URL state, and `done=true` on completion.
+3. Open `/configuration`, configure duration, accept it, then click Start on count-down screen.
+4. Verify `/down?minutes=1&seconds=5&paused=true` loads paused count down, Start/Pause/Resume URL state, and `done=true` on completion.
 
 ## Reporting bugs
 
