@@ -250,6 +250,10 @@ body > main {
   user-select: none;
 }
 
+.app-footer .app-version {
+  margin-inline-start: auto;
+}
+
 .app-version[data-updated="true"],
 .deploy-clue[data-updated="true"] {
   color: #39d353;
