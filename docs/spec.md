@@ -304,7 +304,7 @@ Mode-dependent behaviour:
 - **No mute control here** — the phone's volume buttons work face-down on the floor, need no aiming
   and cost no pixels.
 - Conditional one-line notes: "tap to enable sound" if the `AudioContext` is still suspended (§3),
-  and "Couldn’t keep the screen awake. Check your device display settings." when a supported Wake Lock request fails (§6). Missing Wake Lock support is silent.
+  and the Wake Lock API error when a supported request fails (§6). Missing Wake Lock support is silent.
 
 ### Done
 
@@ -440,8 +440,8 @@ layer below is feature-detected, adds capability where present, and is a no-op w
   this project targets has no Wake Lock below iOS 18.4.**
 - Fallback: feature-detect, let the screen sleep, and recompute from `Date.now()` on wake. Missing
   support is silent. If a supported initial request or visible-running reacquisition rejects, show
-  *"Couldn’t keep the screen awake. Check your device display settings."* until the Routine is idle,
-  paused, Done, Reset, or acquisition succeeds.
+  the Wake Lock API error, prefixed with *"Wake Lock error:"*, until the Routine is idle, paused,
+  Done, Reset, or acquisition succeeds.
   **No silent-video keepalive hacks** — battery cost, folklore, and they break.
 
 ### Audio session — `"transient"`, not `"playback"`

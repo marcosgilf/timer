@@ -7,7 +7,11 @@ export type ScreenWakeLockManager = {
   request: (type: "screen") => Promise<ScreenWakeLockSentinel>;
 };
 
-export type WakeLockAcquireResult = "acquired" | "unsupported" | "failed" | "cancelled";
+export type WakeLockAcquireResult =
+  | "acquired"
+  | "unsupported"
+  | "cancelled"
+  | { status: "failed"; error: unknown };
 
 export const createScreenWakeLock = (
   getManager: () => ScreenWakeLockManager | undefined,
@@ -38,8 +42,8 @@ export const createScreenWakeLock = (
     let request: Promise<ScreenWakeLockSentinel>;
     try {
       request = manager.request("screen");
-    } catch {
-      return Promise.resolve("failed" as const);
+    } catch (error) {
+      return Promise.resolve({ status: "failed" as const, error });
     }
 
     const promise = request
@@ -57,7 +61,9 @@ export const createScreenWakeLock = (
         });
         return "acquired" as const;
       })
-      .catch(() => (version === requestVersion ? "failed" : "cancelled"))
+      .catch((error) =>
+        version === requestVersion ? { status: "failed" as const, error } : "cancelled",
+      )
       .finally(() => {
         if (pending?.version === version) pending = null;
       });
