@@ -56,6 +56,18 @@ Git hooks: `pre-commit` formats and type-checks staged files, `pre-push` runs `p
 Dependency drift and audit checks run in CI rather than pre-push, because they depend on external
 registry/advisory state and can block unrelated local work.
 
+### Audit override
+
+`package.json` pins `nanoid` to `3.3.18` through `pnpm.overrides`. It is a transitive build-time
+dependency of `@vite-pwa/astro → vite-plugin-pwa → vite → postcss`; the lockfile can otherwise keep
+resolving vulnerable `nanoid@3.3.17`, even though the application does not ship `nanoid` to users.
+The override stays until the dependency graph resolves `nanoid >=3.3.18` without it. Verify with:
+
+```sh
+pnpm why nanoid
+pnpm audit
+```
+
 ## How this project is planned
 
 Decisions live in [`docs/spec.md`](./docs/spec.md), with code structure in [`docs/architecture.md`](./docs/architecture.md). [`CONTEXT.md`](./CONTEXT.md) is the glossary. Future work lives in [GitHub Issues](https://github.com/marcosgilf/timer/issues): [countdown](https://github.com/marcosgilf/timer/issues/10) → [rounds](https://github.com/marcosgilf/timer/issues/11).
