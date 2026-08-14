@@ -90,11 +90,12 @@ describe("screen wake lock", () => {
   it("retries after release and recovers after a failed retry", async () => {
     const first = fakeSentinel();
     const recovered = fakeSentinel();
+    const denial = new Error("denied");
     const manager: ScreenWakeLockManager = {
       request: vi
         .fn()
         .mockResolvedValueOnce(first)
-        .mockRejectedValueOnce(new Error("denied"))
+        .mockRejectedValueOnce(denial)
         .mockResolvedValueOnce(recovered),
     };
     let retry!: Promise<WakeLockAcquireResult>;
@@ -108,7 +109,7 @@ describe("screen wake lock", () => {
 
     expect(await lock.acquire()).toBe("acquired");
     first.triggerRelease();
-    expect(await retry).toBe("failed");
+    expect(await retry).toEqual({ status: "failed", error: denial });
     expect(await lock.acquire()).toBe("acquired");
     expect(lock.held).toBe(true);
     expect(manager.request).toHaveBeenCalledTimes(3);
@@ -134,15 +135,16 @@ describe("screen wake lock", () => {
   });
 
   it("reports a rejected supported request as a failure", async () => {
+    const error = new Error("denied");
     const manager: ScreenWakeLockManager = {
-      request: async () => Promise.reject(new Error("denied")),
+      request: async () => Promise.reject(error),
     };
     const lock = createScreenWakeLock(
       () => manager,
       () => true,
     );
 
-    expect(await lock.acquire()).toBe("failed");
+    expect(await lock.acquire()).toEqual({ status: "failed", error });
     expect(lock.held).toBe(false);
   });
 

@@ -9,7 +9,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     <AppBar title="Timer" actionHref="/configuration" />
     <TimerDisplay />
 
-    <p class="wake-lock-error" data-wake-lock-error role="alert" hidden>Couldn’t keep the screen awake. Check your device display settings.</p>
+    <p class="wake-lock-error" data-wake-lock-error role="alert" hidden></p>
 
     <p class="finished" data-finished aria-hidden="true">Done: <time data-finished-time>99:59</time></p>
 
@@ -62,11 +62,18 @@ import AppLayout from "../layouts/AppLayout.astro";
     if (!isRunning(clock) || document.hidden) return;
     const result = await wakeLock.acquire();
     if (!isRunning(clock) || document.hidden) return;
-    if (result === "failed") wakeLockError.hidden = false;
-    if (result === "acquired" || result === "unsupported") wakeLockError.hidden = true;
+    if (typeof result === "object" && result.status === "failed") {
+      wakeLockError.textContent = `Wake Lock error: ${String(result.error)}`;
+      wakeLockError.hidden = false;
+    }
+    if (result === "acquired" || result === "unsupported") {
+      wakeLockError.textContent = "";
+      wakeLockError.hidden = true;
+    }
   };
 
   const releaseWakeLock = () => {
+    wakeLockError.textContent = "";
     wakeLockError.hidden = true;
     void wakeLock.release();
   };
