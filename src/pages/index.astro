@@ -9,6 +9,8 @@ import AppLayout from "../layouts/AppLayout.astro";
     <AppBar title="Timer" actionHref="/configuration" />
     <TimerDisplay />
 
+    <p class="wake-lock-note" data-wake-lock-note hidden>Screen may sleep — keep it awake for sound.</p>
+
     <p class="finished" data-finished aria-hidden="true">Done: <time data-finished-time>99:59</time></p>
 
     <div class="controls">
@@ -27,6 +29,7 @@ import AppLayout from "../layouts/AppLayout.astro";
   import { announceElapsed, formatElapsed, MAX_ELAPSED_MS } from "../domain/format.ts";
   import { chrono } from "../domain/routine.ts";
   import { phaseAt } from "../domain/phase.ts";
+  import { createScreenWakeLock, type ScreenWakeLockManager } from "../client/wake-lock.ts";
 
   const display = document.querySelector<HTMLTimeElement>("[data-display]")!;
   const minutes = document.querySelector<HTMLElement>("[data-minutes]")!;
@@ -36,11 +39,34 @@ import AppLayout from "../layouts/AppLayout.astro";
   const finished = document.querySelector<HTMLElement>("[data-finished]")!;
   const finishedTime = document.querySelector<HTMLTimeElement>("[data-finished-time]")!;
   const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
+  const wakeLockNote = document.querySelector<HTMLElement>("[data-wake-lock-note]")!;
 
   const startsDone = new URLSearchParams(location.search).has("done");
   let clock: Clock = stopped;
   let isFinished = startsDone;
   let frame = 0;
+  let pageTitle = "";
+
+  const wakeLock = createScreenWakeLock(
+    () => {
+      if (!("wakeLock" in navigator)) return undefined;
+      return (navigator as Navigator & { wakeLock: ScreenWakeLockManager }).wakeLock;
+    },
+    () => !document.hidden,
+    () => {
+      if (isRunning(clock) && !document.hidden) void refreshWakeLock();
+    },
+  );
+
+  const refreshWakeLock = async () => {
+    if (!isRunning(clock) || document.hidden) return;
+    wakeLockNote.hidden = !(await wakeLock.acquire());
+  };
+
+  const releaseWakeLock = () => {
+    wakeLockNote.hidden = true;
+    void wakeLock.release();
+  };
 
   const announce = (message: string) => {
     announcer.textContent = message;
@@ -62,7 +88,12 @@ import AppLayout from "../layouts/AppLayout.astro";
     seconds.textContent = ss;
     display.dateTime = `PT${state.displayMs / 1000}S`;
     display.setAttribute("aria-label", announceElapsed(state.displayMs));
-    document.title = isFinished ? `Done - ${formatElapsed(MAX_ELAPSED_MS)} - Timer` : `${visible} - Timer`;
+    const status = isFinished ? "Done" : isRunning(clock) ? "Running" : clock.startedAt === null ? "" : "Paused";
+    const nextTitle = status ? `${status} · ${visible} - Timer` : `${visible} - Timer`;
+    if (nextTitle !== pageTitle) {
+      pageTitle = nextTitle;
+      document.title = nextTitle;
+    }
     finished.dataset.visible = String(isFinished);
     finished.setAttribute("aria-hidden", String(!isFinished));
     finishedTime.textContent = formatElapsed(MAX_ELAPSED_MS);
@@ -78,6 +109,7 @@ import AppLayout from "../layouts/AppLayout.astro";
   const finish = () => {
     isFinished = true;
     clock = pause(clock, Date.now());
+    releaseWakeLock();
     stopTicking();
     setUrlState("done");
     announce(`Done: ${announceElapsed(MAX_ELAPSED_MS)}.`);
@@ -104,6 +136,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     isFinished = false;
     setUrlState("running");
     clock = start(reset(), Date.now());
+    void refreshWakeLock();
     stopTicking();
     announce("Started.");
     paint();
@@ -119,6 +152,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     const now = Date.now();
     if (isRunning(clock)) {
       clock = pause(clock, now);
+      releaseWakeLock();
       setUrlState("paused");
       stopTicking();
       announce(`Paused at ${announceElapsed(elapsedMs(clock, now))}.`);
@@ -132,6 +166,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     }
 
     clock = resume(clock, now);
+    void refreshWakeLock();
     setUrlState("running");
     announce("Resumed.");
     paint();
@@ -142,17 +177,44 @@ import AppLayout from "../layouts/AppLayout.astro";
     setUrlState("running");
     clock = reset();
     isFinished = false;
+    releaseWakeLock();
     stopTicking();
     announce("Reset.");
     paint();
   });
 
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && isRunning(clock)) {
+    paint();
+    if (document.hidden) {
+      void wakeLock.release();
+      return;
+    }
+    if (isRunning(clock)) {
+      void refreshWakeLock();
       stopTicking();
       tick();
     }
   });
+
+  let confirmedNavigation = false;
+  document.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      if (!isRunning(clock) || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (!window.confirm("Leave the running Routine?")) {
+        event.preventDefault();
+        return;
+      }
+      confirmedNavigation = true;
+      releaseWakeLock();
+    });
+  });
+
+  window.addEventListener("beforeunload", (event) => {
+    if (!isRunning(clock) || confirmedNavigation) return;
+    event.preventDefault();
+  });
+
+  window.addEventListener("pagehide", releaseWakeLock);
 
   paint();
 </script>

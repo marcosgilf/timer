@@ -6,8 +6,10 @@ import AppLayout from "../layouts/AppLayout.astro";
 
 <AppLayout title="Down Timer">
   <main>
-    <AppBar title="Timer" backHref="/" backLabel="Up" actionHref="/configuration" />
+    <AppBar title="Timer" backHref="/" backLabel="Back" actionHref="/configuration" />
     <TimerDisplay />
+
+    <p class="wake-lock-note" data-wake-lock-note hidden>Screen may sleep — keep it awake for sound.</p>
 
     <p class="finished" data-finished aria-hidden="true">
       Done count down: <time data-configured-duration>05:00</time>
@@ -28,6 +30,7 @@ import AppLayout from "../layouts/AppLayout.astro";
   import { announceElapsed, formatElapsed, formatRemaining } from "../domain/format.ts";
   import { countdown, DEFAULT_DURATION_MS, durationFromParts } from "../domain/routine.ts";
   import { phaseAt } from "../domain/phase.ts";
+  import { createScreenWakeLock, type ScreenWakeLockManager } from "../client/wake-lock.ts";
 
   const params = new URLSearchParams(location.search);
   const hasDuration = params.has("minutes") || params.has("seconds");
@@ -46,10 +49,34 @@ import AppLayout from "../layouts/AppLayout.astro";
   const finished = document.querySelector<HTMLElement>("[data-finished]")!;
   const configuredDuration = document.querySelector<HTMLTimeElement>("[data-configured-duration]")!;
   const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
+  const wakeLockNote = document.querySelector<HTMLElement>("[data-wake-lock-note]")!;
+  const configurationLink = document.querySelector<HTMLAnchorElement>(".app-bar-action a")!;
 
   let clock: Clock = stopped;
   let isFinished = startsDone;
   let frame = 0;
+  let pageTitle = "";
+
+  const wakeLock = createScreenWakeLock(
+    () => {
+      if (!("wakeLock" in navigator)) return undefined;
+      return (navigator as Navigator & { wakeLock: ScreenWakeLockManager }).wakeLock;
+    },
+    () => !document.hidden,
+    () => {
+      if (isRunning(clock) && !document.hidden) void refreshWakeLock();
+    },
+  );
+
+  const refreshWakeLock = async () => {
+    if (!isRunning(clock) || document.hidden) return;
+    wakeLockNote.hidden = !(await wakeLock.acquire());
+  };
+
+  const releaseWakeLock = () => {
+    wakeLockNote.hidden = true;
+    void wakeLock.release();
+  };
 
   const announce = (message: string) => {
     announcer.textContent = message;
@@ -73,7 +100,12 @@ import AppLayout from "../layouts/AppLayout.astro";
     display.setAttribute("aria-label", announceElapsed(Math.ceil(state.displayMs / 1000) * 1000));
     configuredDuration.textContent = formatElapsed(durationMs);
     configuredDuration.dateTime = `PT${durationMs / 1000}S`;
-    document.title = isFinished ? `Done - ${formatElapsed(durationMs)} - Down Timer` : `${visible} - Down Timer`;
+    const status = isFinished ? "Done" : isRunning(clock) ? "Running" : clock.startedAt === null ? "" : "Paused";
+    const nextTitle = status ? `${status} · ${visible} - Down Timer` : `${visible} - Down Timer`;
+    if (nextTitle !== pageTitle) {
+      pageTitle = nextTitle;
+      document.title = nextTitle;
+    }
     finished.dataset.visible = String(isFinished);
     finished.setAttribute("aria-hidden", String(!isFinished));
     return state;
@@ -87,6 +119,7 @@ import AppLayout from "../layouts/AppLayout.astro";
   const finish = () => {
     isFinished = true;
     clock = pause(clock, Date.now());
+    releaseWakeLock();
     stopTicking();
     setUrlState("done");
     announce(`Done count down: ${announceElapsed(durationMs)}.`);
@@ -113,6 +146,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     isFinished = false;
     setUrlState("running");
     clock = start(reset(), Date.now());
+    void refreshWakeLock();
     stopTicking();
     announce(`Started. ${announceElapsed(durationMs)} configured.`);
     paint();
@@ -128,6 +162,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     const now = Date.now();
     if (isRunning(clock)) {
       clock = pause(clock, now);
+      releaseWakeLock();
       setUrlState("paused");
       stopTicking();
       announce(`Paused at ${announceElapsed(Math.ceil(elapsedMs(clock, now) / 1000) * 1000)}.`);
@@ -141,6 +176,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     }
 
     clock = resume(clock, now);
+    void refreshWakeLock();
     setUrlState("running");
     announce("Resumed.");
     paint();
@@ -151,17 +187,51 @@ import AppLayout from "../layouts/AppLayout.astro";
     setUrlState("running");
     clock = reset();
     isFinished = false;
+    releaseWakeLock();
     stopTicking();
     announce("Reset.");
     paint();
   });
 
+  const configurationUrl = new URL("/configuration", location.origin);
+  configurationUrl.search = new URLSearchParams({
+    minutes: String(Math.floor(durationMs / 60_000)),
+    seconds: String(Math.floor(durationMs / 1000) % 60),
+  }).toString();
+  configurationLink.href = `${configurationUrl.pathname}${configurationUrl.search}`;
+
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && isRunning(clock)) {
+    paint();
+    if (document.hidden) {
+      void wakeLock.release();
+      return;
+    }
+    if (isRunning(clock)) {
+      void refreshWakeLock();
       stopTicking();
       tick();
     }
   });
+
+  let confirmedNavigation = false;
+  document.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      if (!isRunning(clock) || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (!window.confirm("Leave the running Routine?")) {
+        event.preventDefault();
+        return;
+      }
+      confirmedNavigation = true;
+      releaseWakeLock();
+    });
+  });
+
+  window.addEventListener("beforeunload", (event) => {
+    if (!isRunning(clock) || confirmedNavigation) return;
+    event.preventDefault();
+  });
+
+  window.addEventListener("pagehide", releaseWakeLock);
 
   paint();
   if (!startsPaused && !startsDone) startRunning();
