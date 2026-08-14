@@ -111,6 +111,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     configuredDuration.textContent = formatElapsed(durationMs);
     configuredDuration.dateTime = `PT${durationMs / 1000}S`;
     const status = isFinished ? "Done" : isRunning(clock) ? "Running" : clock.startedAt === null ? "" : "Paused";
+    document.body.dataset.routineActive = String(!isFinished && clock.startedAt !== null);
     const nextTitle = status ? `${status} · ${visible} - Down Timer` : `${visible} - Down Timer`;
     if (nextTitle !== pageTitle) {
       pageTitle = nextTitle;
@@ -226,8 +227,8 @@ import AppLayout from "../layouts/AppLayout.astro";
   let confirmedNavigation = false;
   document.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((link) => {
     link.addEventListener("click", (event) => {
-      if (!isRunning(clock) || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      if (!window.confirm("Leave the running Routine?")) {
+      if (document.body.dataset.routineActive !== "true" || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (!window.confirm("Leave the active Routine?")) {
         event.preventDefault();
         return;
       }
@@ -237,7 +238,7 @@ import AppLayout from "../layouts/AppLayout.astro";
   });
 
   window.addEventListener("beforeunload", (event) => {
-    if (!isRunning(clock) || confirmedNavigation) return;
+    if (document.body.dataset.routineActive !== "true" || confirmedNavigation || document.body.dataset.navigationConfirmed === "true") return;
     event.preventDefault();
   });
 

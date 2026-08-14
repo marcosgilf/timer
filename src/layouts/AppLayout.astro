@@ -35,8 +35,9 @@ const deployLabel =
     <link rel="manifest" href="/manifest.webmanifest" />
     <title>{title}</title>
   </head>
-  <body>
+  <body data-routine-active="false">
     <slot />
+    <button type="button" class="update-control" data-update-control hidden>Reload to update</button>
     <footer class="app-footer">
       {deployLabel && <small class="deploy-clue" aria-label={`Deployment context ${deployLabel}`}>{deployLabel}</small>}
       <small class="app-version" aria-label={`Timer version ${version}`}>v{version}</small>
@@ -44,8 +45,29 @@ const deployLabel =
 
     <script>
       import { registerSW } from "virtual:pwa-register";
+      import { createPwaUpdateController, type RegisterSW } from "../client/pwa-update.ts";
 
-      registerSW();
+      const updateControl = document.querySelector<HTMLButtonElement>("[data-update-control]")!;
+      const registerServiceWorker: RegisterSW = (options) => registerSW(options);
+      const update = createPwaUpdateController({
+        registerSW: registerServiceWorker,
+        isRoutineActive: () => document.body.dataset.routineActive === "true",
+        confirmLeave: () => window.confirm("Leave the active Routine and reload?"),
+        onUpdateReady: () => {
+          updateControl.hidden = false;
+        },
+        onActivationConfirmed: () => {
+          document.body.dataset.navigationConfirmed = "true";
+        },
+        onActivationFailed: () => {
+          delete document.body.dataset.navigationConfirmed;
+        },
+      });
+
+      updateControl.addEventListener("click", () => {
+        void update.activate();
+      });
+      update.register();
     </script>
   </body>
 </html>

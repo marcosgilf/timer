@@ -23,6 +23,7 @@ body > main {
   width: 100%;
   max-width: none;
   padding: 1rem max(0.5rem, env(safe-area-inset-left)) 1rem max(0.5rem, env(safe-area-inset-right));
+  padding-bottom: calc(7rem + env(safe-area-inset-bottom));
   overflow-x: hidden;
   text-align: center;
 }
@@ -226,6 +227,23 @@ body > main {
 .finished time {
   color: var(--digit-colour);
   font-variant-numeric: tabular-nums;
+}
+
+.update-control {
+  position: fixed;
+  z-index: 2;
+  inset-inline: max(0.5rem, env(safe-area-inset-left)) max(0.5rem, env(safe-area-inset-right));
+  bottom: calc(3rem + env(safe-area-inset-bottom));
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  padding-inline: 0.75rem;
+  white-space: normal;
+}
+
+.update-control:focus-visible {
+  outline: 3px solid var(--pico-primary);
+  outline-offset: 3px;
 }
 
 .app-footer {
