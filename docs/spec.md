@@ -49,8 +49,9 @@ product shape and the order changed.
 
 ### Deferred until a shipped capability needs it
 
-Cues and sound, settings, persistence, Wake Lock, skip/back transport, and configuring the prepare
-countdown. Each stays specified below and returns as its own slice.
+The remaining cue catalogue (countdown ticks, phase starts, final-round markers), settings,
+persistence, Wake Lock, skip/back transport, and configuring the prepare countdown. Each stays specified
+below and returns as its own slice.
 
 ---
 
@@ -180,6 +181,20 @@ because nothing accumulates.
 
 Decided by Audio and haptic cue model, with the
 scheduling horizon revised by iOS background audio.
+
+### Shipped subset — issue #21
+
+The first audio slice ships one generated `routine-end` cue for count-down Routines. It is scheduled
+from the explicit Start or Resume gesture at `AudioContext.currentTime + remainingMs / 1000`, uses an
+`OscillatorNode` and `GainNode`, and is cancelled on pause, reset, restart, navigation, or a new Start.
+Audio unlock failure is progressive enhancement: the Clock and Done screen continue normally, with a
+one-line "Tap Start to enable sound." note when unlock is unavailable. All other cues, preferences,
+and sinks remain future work.
+
+Before shipping, manually verify in iOS Safari and its installed PWA, plus Android Chrome and its
+installed PWA: Start → finish, pause past the original deadline → Resume → finish, and Reset before
+the deadline. Confirm device volume/silent controls follow each platform's audio policy and no stale
+cue plays.
 
 **Cues are data, sinks are dumb.** `cuesFor(routine)` is a pure function returning `{ at, kind }[]`;
 sinks (tone, vibration, later speech) render them. The pure part is unit-tested; sinks are trivial
