@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/marcosgilf/timer/compare/v0.3.0...v0.4.0) (2026-08-14)
+
+
+### Features
+
+* **pwa:** add session affordances ([6d16d30](https://github.com/marcosgilf/timer/commit/6d16d308ebdee5467d6ad13faf9560ddd46c0ca4))
+
 ## [0.3.0](https://github.com/marcosgilf/timer/compare/v0.2.0...v0.3.0) (2026-08-12)
 
 
