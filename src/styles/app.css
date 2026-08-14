@@ -207,9 +207,9 @@ body > main {
   width: 100%;
 }
 
-.wake-lock-note {
+.wake-lock-error {
   margin: 0;
-  color: var(--pico-muted-color);
+  color: var(--pico-del-color);
   font-size: 0.875rem;
 }
 

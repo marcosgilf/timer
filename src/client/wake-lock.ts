@@ -7,6 +7,8 @@ export type ScreenWakeLockManager = {
   request: (type: "screen") => Promise<ScreenWakeLockSentinel>;
 };
 
+export type WakeLockAcquireResult = "acquired" | "unsupported" | "failed" | "cancelled";
+
 export const createScreenWakeLock = (
   getManager: () => ScreenWakeLockManager | undefined,
   isVisible: () => boolean,
@@ -14,45 +16,62 @@ export const createScreenWakeLock = (
 ) => {
   let sentinel: ScreenWakeLockSentinel | null = null;
   let requestVersion = 0;
+  let pending: { version: number; promise: Promise<WakeLockAcquireResult> } | null = null;
 
-  const acquire = async (): Promise<boolean> => {
-    if (sentinel) return true;
-    if (!isVisible()) return false;
+  const releaseSentinel = async (value: ScreenWakeLockSentinel) => {
+    try {
+      await value.release();
+    } catch {
+      // Wake Lock is an optional enhancement. Release failures cannot affect Clock state.
+    }
+  };
+
+  const acquire = (): Promise<WakeLockAcquireResult> => {
+    if (sentinel) return Promise.resolve("acquired");
+    if (!isVisible()) return Promise.resolve("cancelled");
+    if (pending?.version === requestVersion) return pending.promise;
 
     const manager = getManager();
-    if (!manager) return false;
+    if (!manager) return Promise.resolve("unsupported");
 
-    const version = ++requestVersion;
+    const version = requestVersion;
+    let request: Promise<ScreenWakeLockSentinel>;
     try {
-      const next = await manager.request("screen");
-      if (version !== requestVersion || sentinel) {
-        await next.release();
-        return false;
-      }
-
-      sentinel = next;
-      next.addEventListener("release", () => {
-        if (sentinel !== next) return;
-        sentinel = null;
-        onUnexpectedRelease();
-      });
-      return true;
+      request = manager.request("screen");
     } catch {
-      return false;
+      return Promise.resolve("failed" as const);
     }
+
+    const promise = request
+      .then(async (next) => {
+        if (version !== requestVersion || sentinel) {
+          await releaseSentinel(next);
+          return "cancelled" as const;
+        }
+
+        sentinel = next;
+        next.addEventListener("release", () => {
+          if (sentinel !== next) return;
+          sentinel = null;
+          onUnexpectedRelease();
+        });
+        return "acquired" as const;
+      })
+      .catch(() => (version === requestVersion ? "failed" : "cancelled"))
+      .finally(() => {
+        if (pending?.version === version) pending = null;
+      });
+
+    pending = { version, promise };
+    return promise;
   };
 
   const release = async (): Promise<void> => {
     requestVersion += 1;
+    pending = null;
     const current = sentinel;
     sentinel = null;
-    if (!current) return;
-
-    try {
-      await current.release();
-    } catch {
-      // Releasing is best effort. Clock accuracy does not depend on Wake Lock.
-    }
+    if (current) await releaseSentinel(current);
   };
 
   return {

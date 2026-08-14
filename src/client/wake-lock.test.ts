@@ -3,6 +3,7 @@ import {
   createScreenWakeLock,
   type ScreenWakeLockManager,
   type ScreenWakeLockSentinel,
+  type WakeLockAcquireResult,
 } from "./wake-lock.ts";
 
 type FakeSentinel = ScreenWakeLockSentinel & {
@@ -37,8 +38,8 @@ describe("screen wake lock", () => {
       onUnexpectedRelease,
     );
 
-    expect(await lock.acquire()).toBe(true);
-    expect(await lock.acquire()).toBe(true);
+    expect(await lock.acquire()).toBe("acquired");
+    expect(await lock.acquire()).toBe("acquired");
     expect(manager.request).toHaveBeenCalledTimes(1);
     expect(lock.held).toBe(true);
 
@@ -58,11 +59,59 @@ describe("screen wake lock", () => {
       onUnexpectedRelease,
     );
 
-    await lock.acquire();
+    expect(await lock.acquire()).toBe("acquired");
     sentinel.triggerRelease();
 
     expect(lock.held).toBe(false);
     expect(onUnexpectedRelease).toHaveBeenCalledOnce();
+  });
+
+  it("shares one in-flight acquisition", async () => {
+    const sentinel = fakeSentinel();
+    let resolveRequest!: (value: ScreenWakeLockSentinel) => void;
+    const request = new Promise<ScreenWakeLockSentinel>((resolve) => {
+      resolveRequest = resolve;
+    });
+    const manager: ScreenWakeLockManager = { request: vi.fn(() => request) };
+    const lock = createScreenWakeLock(
+      () => manager,
+      () => true,
+    );
+
+    const first = lock.acquire();
+    const second = lock.acquire();
+    expect(manager.request).toHaveBeenCalledOnce();
+
+    resolveRequest(sentinel);
+    expect(await first).toBe("acquired");
+    expect(await second).toBe("acquired");
+  });
+
+  it("retries after release and recovers after a failed retry", async () => {
+    const first = fakeSentinel();
+    const recovered = fakeSentinel();
+    const manager: ScreenWakeLockManager = {
+      request: vi
+        .fn()
+        .mockResolvedValueOnce(first)
+        .mockRejectedValueOnce(new Error("denied"))
+        .mockResolvedValueOnce(recovered),
+    };
+    let retry!: Promise<WakeLockAcquireResult>;
+    const lock = createScreenWakeLock(
+      () => manager,
+      () => true,
+      () => {
+        retry = lock.acquire();
+      },
+    );
+
+    expect(await lock.acquire()).toBe("acquired");
+    first.triggerRelease();
+    expect(await retry).toBe("failed");
+    expect(await lock.acquire()).toBe("acquired");
+    expect(lock.held).toBe(true);
+    expect(manager.request).toHaveBeenCalledTimes(3);
   });
 
   it("does not request while hidden or when unsupported", async () => {
@@ -73,7 +122,7 @@ describe("screen wake lock", () => {
       () => visible,
     );
 
-    expect(await lock.acquire()).toBe(false);
+    expect(await lock.acquire()).toBe("cancelled");
     expect(manager.request).not.toHaveBeenCalled();
 
     visible = true;
@@ -81,10 +130,10 @@ describe("screen wake lock", () => {
       () => undefined,
       () => visible,
     );
-    expect(await unsupported.acquire()).toBe(false);
+    expect(await unsupported.acquire()).toBe("unsupported");
   });
 
-  it("treats a rejected request as unsupported", async () => {
+  it("reports a rejected supported request as a failure", async () => {
     const manager: ScreenWakeLockManager = {
       request: async () => Promise.reject(new Error("denied")),
     };
@@ -93,7 +142,7 @@ describe("screen wake lock", () => {
       () => true,
     );
 
-    expect(await lock.acquire()).toBe(false);
+    expect(await lock.acquire()).toBe("failed");
     expect(lock.held).toBe(false);
   });
 
@@ -113,7 +162,7 @@ describe("screen wake lock", () => {
     await lock.release();
     resolveRequest(sentinel);
 
-    expect(await acquiring).toBe(false);
+    expect(await acquiring).toBe("cancelled");
     expect(sentinel.releaseCount).toBe(1);
     expect(lock.held).toBe(false);
   });
