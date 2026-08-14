@@ -7,55 +7,48 @@ export type RegisterSW = (options: {
 
 type PwaUpdateControllerOptions = {
   registerSW: RegisterSW;
-  isRoutineActive: () => boolean;
-  confirmLeave: () => boolean;
-  onUpdateReady: () => void;
-  onActivationConfirmed: () => void;
+  onActivationStarted: () => void;
   onActivationFailed?: () => void;
 };
 
 export const createPwaUpdateController = ({
   registerSW,
-  isRoutineActive,
-  confirmLeave,
-  onUpdateReady,
-  onActivationConfirmed,
+  onActivationStarted,
   onActivationFailed,
 }: PwaUpdateControllerOptions) => {
   let updateSW: UpdateSW | null = null;
   let updateReady = false;
+  let activationRequested = false;
   let activationStarted = false;
 
-  const register = () => {
-    try {
-      updateSW = registerSW({
-        onNeedRefresh: () => {
-          updateReady = true;
-          onUpdateReady();
-        },
-        onRegisterError: () => {},
-      });
-    } catch {
-      // Service-worker support is an enhancement. Timer behavior stays independent.
-    }
-  };
-
   const activate = async (): Promise<boolean> => {
+    activationRequested = true;
     if (!updateReady || !updateSW || activationStarted) return false;
-
-    const routineActive = isRoutineActive();
-    if (routineActive && !confirmLeave()) return false;
 
     activationStarted = true;
 
     try {
-      if (routineActive) onActivationConfirmed();
+      onActivationStarted();
       await updateSW(true);
       return true;
     } catch {
       activationStarted = false;
       onActivationFailed?.();
       return false;
+    }
+  };
+
+  const register = () => {
+    try {
+      updateSW = registerSW({
+        onNeedRefresh: () => {
+          updateReady = true;
+          if (activationRequested) void activate();
+        },
+        onRegisterError: () => {},
+      });
+    } catch {
+      // Service-worker support is an enhancement. Timer behavior stays independent.
     }
   };
 
