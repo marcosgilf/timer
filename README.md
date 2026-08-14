@@ -28,7 +28,8 @@ is a Tabata whether or not anything is labelled "Tabata".
 - **Offline-first** — precached service worker, no backend, no accounts, no analytics. Installable as
   **Timer**; waiting updates apply immediately when no Routine is active.
 - **Automatic updates** — an active or paused Routine defers a waiting worker until Done or Reset. The
-  new build reloads automatically, then the bottom version shows green **NEW vx.x.x** for that reload only.
+  new build reloads automatically; releases show green **NEW vx.x.x** at right, while dev previews append
+  green **NEW** to the PR/deployment clue at left.
 - **Progressive enhancement** — audio session, Wake Lock and vibration are feature-detected and no-ops
   where absent. The app is fully correct without any of them.
 - **Semantic and accessible** — [Pico CSS](https://picocss.com/) classless, WCAG 2.2 AA in every slice.
@@ -88,7 +89,8 @@ published, served at [timer.marcosgilf.com](https://timer.marcosgilf.com).
 
 Release Please opens Release PRs from Conventional Commits. Merging a Release PR bumps
 `package.json`, updates `CHANGELOG.md`, creates a `vX.Y.Z` Git tag and a GitHub Release. Publishing
-that release triggers the production deploy. The app shows that version in the bottom-right corner.
+that release triggers the production deploy. The app shows that version in the bottom-right corner;
+production update highlights stay there, while preview highlights use the left deployment clue.
 
 Use commit prefixes intentionally:
 

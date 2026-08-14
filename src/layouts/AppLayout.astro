@@ -38,7 +38,7 @@ const deployLabel =
   <body data-routine-active="false">
     <slot />
     <footer class="app-footer">
-      {deployLabel && <small class="deploy-clue" aria-label={`Deployment context ${deployLabel}`}>{deployLabel}</small>}
+      {deployLabel && <small class="deploy-clue" data-deploy-clue aria-label={`Deployment context ${deployLabel}`}>{deployLabel}</small>}
       <small class="app-version" data-app-version aria-label={`Timer version ${version}`}>v{version}</small>
     </footer>
 
@@ -47,15 +47,23 @@ const deployLabel =
       import { createPwaUpdateController, type RegisterSW } from "../client/pwa-update.ts";
 
       const appVersion = document.querySelector<HTMLElement>("[data-app-version]")!;
+      const deployClue = document.querySelector<HTMLElement>("[data-deploy-clue]");
       const updateMarker = "timer:update-activated";
 
       try {
         if (sessionStorage.getItem(updateMarker) === "true") {
           sessionStorage.removeItem(updateMarker);
-          const versionLabel = appVersion.getAttribute("aria-label") ?? "Timer version";
-          appVersion.textContent = `NEW ${appVersion.textContent ?? ""}`;
-          appVersion.dataset.updated = "true";
-          appVersion.setAttribute("aria-label", `New ${versionLabel}`);
+          if (deployClue) {
+            const deployLabel = deployClue.getAttribute("aria-label") ?? "Deployment context";
+            deployClue.textContent = `${deployClue.textContent ?? ""} NEW`;
+            deployClue.dataset.updated = "true";
+            deployClue.setAttribute("aria-label", `${deployLabel} new`);
+          } else {
+            const versionLabel = appVersion.getAttribute("aria-label") ?? "Timer version";
+            appVersion.textContent = `NEW ${appVersion.textContent ?? ""}`;
+            appVersion.dataset.updated = "true";
+            appVersion.setAttribute("aria-label", `New ${versionLabel}`);
+          }
         }
       } catch {
         // Version highlighting is optional. Timer behavior stays independent.

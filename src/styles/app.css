@@ -250,7 +250,8 @@ body > main {
   user-select: none;
 }
 
-.app-version[data-updated="true"] {
+.app-version[data-updated="true"],
+.deploy-clue[data-updated="true"] {
   color: #39d353;
   font-weight: 700;
   opacity: 1;
