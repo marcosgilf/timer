@@ -135,6 +135,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     setUrlState("done");
     announce(`Done count down: ${announceElapsed(durationMs)}.`);
     paint();
+    window.dispatchEvent(new Event("timer:counter-inactive"));
   };
 
   const paint = () => {
@@ -154,7 +155,6 @@ import AppLayout from "../layouts/AppLayout.astro";
   };
 
   const startRunning = () => {
-    window.dispatchEvent(new Event("timer:counter-activated"));
     isFinished = false;
     setUrlState("running");
     clock = start(reset(), Date.now());
@@ -203,6 +203,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     stopTicking();
     announce("Reset.");
     paint();
+    window.dispatchEvent(new Event("timer:counter-inactive"));
   });
 
   const configurationUrl = new URL("/configuration", location.origin);

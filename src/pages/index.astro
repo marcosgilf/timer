@@ -125,6 +125,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     setUrlState("done");
     announce(`Done: ${announceElapsed(MAX_ELAPSED_MS)}.`);
     paint();
+    window.dispatchEvent(new Event("timer:counter-inactive"));
   };
 
   const paint = () => {
@@ -144,7 +145,6 @@ import AppLayout from "../layouts/AppLayout.astro";
   };
 
   const startRunning = () => {
-    window.dispatchEvent(new Event("timer:counter-activated"));
     isFinished = false;
     setUrlState("running");
     clock = start(reset(), Date.now());
@@ -193,6 +193,7 @@ import AppLayout from "../layouts/AppLayout.astro";
     stopTicking();
     announce("Reset.");
     paint();
+    window.dispatchEvent(new Event("timer:counter-inactive"));
   });
 
   document.addEventListener("visibilitychange", () => {
