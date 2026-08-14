@@ -29,7 +29,7 @@ import AppLayout from "../layouts/AppLayout.astro";
         </div>
       </fieldset>
 
-      <button type="button" data-action="start">Start</button>
+      <button type="button" data-action="accept">Accept</button>
     </form>
 
     <p class="visually-hidden" role="status" data-announcer></p>
@@ -48,7 +48,7 @@ import AppLayout from "../layouts/AppLayout.astro";
   const display = document.querySelector<HTMLTimeElement>("[data-display]")!;
   const minutes = document.querySelector<HTMLElement>("[data-minutes]")!;
   const seconds = document.querySelector<HTMLElement>("[data-seconds]")!;
-  const startButton = document.querySelector<HTMLButtonElement>('[data-action="start"]')!;
+  const acceptButton = document.querySelector<HTMLButtonElement>('[data-action="accept"]')!;
   const announcer = document.querySelector<HTMLElement>("[data-announcer]")!;
   const stepButtons = document.querySelectorAll<HTMLButtonElement>("[data-step]");
 
@@ -78,10 +78,10 @@ import AppLayout from "../layouts/AppLayout.astro";
     });
   });
 
-  startButton.addEventListener("click", () => {
+  acceptButton.addEventListener("click", () => {
     const minutesPart = Math.floor(durationMs / 60_000);
     const secondsPart = Math.floor((durationMs % 60_000) / 1000);
-    location.href = `/down?minutes=${minutesPart}&seconds=${secondsPart}`;
+    location.href = `/down?minutes=${minutesPart}&seconds=${secondsPart}&paused=true`;
   });
 
   render();
