@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/marcosgilf/timer/compare/v0.5.1...v0.6.0) (2026-08-18)
+
+
+### Features
+
+* **audio:** add count-down completion sound ([5b7d3f0](https://github.com/marcosgilf/timer/commit/5b7d3f0e6bcfdd435872194fe01eb62e3a8bf278))
+
 ## [0.5.1](https://github.com/marcosgilf/timer/compare/v0.5.0...v0.5.1) (2026-08-14)
 
 
