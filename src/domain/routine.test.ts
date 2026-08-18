@@ -1,16 +1,25 @@
 import { describe, expect, it } from "vitest";
 import {
+  clampRounds,
   countdown,
   DEFAULT_DURATION_MS,
   durationFromParts,
   MAX_DURATION_MS,
+  MAX_ROUNDS,
   MIN_DURATION_MS,
+  MIN_ROUNDS,
   stepDuration,
+  stepRounds,
 } from "./routine.ts";
 
 describe("countdown duration", () => {
   it("defaults to five minutes", () => {
-    expect(countdown()).toEqual({ direction: "down", durationMs: DEFAULT_DURATION_MS });
+    expect(countdown()).toEqual({
+      direction: "down",
+      durationMs: DEFAULT_DURATION_MS,
+      restMs: 0,
+      rounds: 1,
+    });
   });
 
   it("carries seconds into minutes", () => {
@@ -37,5 +46,21 @@ describe("countdown duration", () => {
     expect(durationFromParts(-1, 0)).toBe(MIN_DURATION_MS);
     expect(durationFromParts(99, 60)).toBe(MAX_DURATION_MS);
     expect(durationFromParts(Number.NaN, Number.POSITIVE_INFINITY)).toBe(MIN_DURATION_MS);
+  });
+
+  it("allows rest to be disabled at zero", () => {
+    expect(countdown(20_000, 0, 8)).toMatchObject({ restMs: 0, rounds: 8 });
+    expect(durationFromParts(0, 0, true)).toBe(0);
+    expect(stepDuration(0, "seconds", -1, true)).toBe(0);
+    expect(stepDuration(1000, "seconds", -1, true)).toBe(0);
+  });
+
+  it("clamps rounds and steps them one at a time", () => {
+    expect(clampRounds(0)).toBe(MIN_ROUNDS);
+    expect(clampRounds(MAX_ROUNDS + 1)).toBe(MAX_ROUNDS);
+    expect(clampRounds(Number.NaN)).toBe(MIN_ROUNDS);
+    expect(stepRounds(1, -1)).toBe(MIN_ROUNDS);
+    expect(stepRounds(MAX_ROUNDS, 1)).toBe(MAX_ROUNDS);
+    expect(stepRounds(8, 1)).toBe(9);
   });
 });
